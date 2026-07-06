@@ -1,0 +1,38 @@
+{
+  "name": "aem-quality-gate-toolkit",
+  "version": "1.0.0",
+  "description": "Rule-driven static analysis toolkit for AEMaaCS projects — zero AI required for scanning",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "lint": "npm run lint:js && npm run lint:css && npm run lint:html",
+    "lint:js": "eslint --config rules/frontend/eslint.config.aem.mjs",
+    "lint:css": "stylelint --config rules/frontend/stylelint.aem.json",
+    "lint:html": "htmlhint",
+    "quality-gate": "bash runner/run-quality-gate.sh"
+  },
+  "devDependencies": {
+    "eslint": "^9.7.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "stylelint": "^16.6.1",
+    "stylelint-config-standard": "^36.0.1",
+    "stylelint-config-standard-scss": "^13.1.0",
+    "html-eslint": "^19.9.0",
+    "htmlhint": "^1.9.2"
+  },
+  "keywords": [
+    "aem",
+    "aemascs",
+    "quality",
+    "lint",
+    "static-analysis",
+    "pmd",
+    "checkstyle",
+    "eslint",
+    "stylelint"
+  ]
+}

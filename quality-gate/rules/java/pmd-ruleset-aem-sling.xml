@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="AEM-Sling-Best-Practices"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+  <description>
+    Adobe AEM and Sling-specific best practices and security rules.
+    Covers: ResourceResolver management, JCR Session handling, Sling Models correctness, deprecated APIs.
+  </description>
+
+  <!-- ========== SECURITY: ResourceResolver Management ========== -->
+  <rule name="ResourceResolverNotClosed" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="ResourceResolver must be closed via try-with-resources or finally block to prevent leaks">
+    <priority>1</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodDeclaration[
+            .//VariableDeclarator[contains(@Image, 'ResourceResolver')]
+            and not(.//TryStatement[.//ResourceSpecification])
+            and not(.//FinallyBlock)
+          ]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== SECURITY: JCR Session Management ========== -->
+  <rule name="JCRSessionNotLoggedOut" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="JCR Session.logout() must be called in finally block or try-with-resources">
+    <priority>1</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodDeclaration[
+            .//VariableDeclarator[contains(@Image, 'Session')]
+            and not(.//TryStatement)
+          ]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== SECURITY: Avoid Admin Resolver ========== -->
+  <rule name="AvoidAdministrativeResolver" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="Use service user login instead of getAdministrativeResourceResolver() or loginAdministrative() — security and audit risk">
+    <priority>1</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodInvocation[
+            MethodName[
+              contains(., 'getAdministrativeResourceResolver')
+              or contains(., 'loginAdministrative')
+            ]
+          ]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== CORRECTNESS: WCMUsePojo Deprecated ========== -->
+  <rule name="WCMUsePojoDeprecated" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="WCMUsePojo is deprecated — use Sling Models with @Model annotation instead">
+    <priority>2</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //ClassOrInterfaceDeclaration[
+            ExtendsList/ClassOrInterfaceType[contains(@Image, 'WCMUsePojo')]
+          ]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== CORRECTNESS: adaptTo() Without Null Check ========== -->
+  <rule name="AdaptToWithoutNullCheck" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="adaptTo() can return null — must check result before use">
+    <priority>2</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodInvocation[MethodName[contains(., 'adaptTo')]]
+          [not(
+            parent::AssignmentOperator[parent::Statement[following-sibling::IfStatement]]
+            or parent::IfStatement
+            or ancestor::IfStatement
+          )]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== CORRECTNESS: Sling Model Missing @Optional/@Default ========== -->
+  <rule name="SlingModelNullableField" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="Sling Model fields that can be null should have @Optional or @Default annotation">
+    <priority>2</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //ClassOrInterfaceDeclaration[@Image[contains(., 'Model')]]
+          //FieldDeclaration[not(.//Annotation[@Image[contains(., 'Optional') or contains(., 'Default')]])]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== DESIGN: Hardcoded Content Paths ========== -->
+  <rule name="HardcodedContentPath" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="Hardcoded /content/ paths reduce portability — use configurable paths or constants instead">
+    <priority>2</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //StringLiteral[contains(@Image, '/content/')]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== SECURITY: Servlet Path Too Broad ========== -->
+  <rule name="ServletPathTooBroad" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="Servlet resource bindings should be specific (avoid .* or / patterns) — security risk">
+    <priority>2</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //Annotation[@Image[contains(., 'SlingServletResourceTypes')]]
+          //MemberValuePair[@Image[contains(., 'resourceTypes')]]
+          //StringLiteral[contains(@Image, '.*') or @Image='/' or @Image='""']
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== DESIGN: @Reference Binding Policy ========== -->
+  <rule name="ReferenceBindingPolicy" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="@Reference should specify bindingPolicy when appropriate for optional dependencies">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //Annotation[@Image[contains(., 'Reference')]]
+          [not(.//MemberValuePair[@Image[contains(., 'policy')]])]
+          //ancestor::FieldDeclaration
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== DESIGN: Overly Broad Component Binding ========== -->
+  <rule name="ComponentResourceTypeTooBroad" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="Component resourceType binding should be specific (avoid top-level patterns)">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //Annotation[@Image[contains(., 'Component')]]
+          //MemberValuePair[@Image[contains(., 'resourceTypes')]]
+          //StringLiteral[contains(@Image, '*')]
+        </value>
+      </property>
+    </properties>
+  </rule>
+</ruleset>

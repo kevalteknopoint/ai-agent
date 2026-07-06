@@ -1,31 +1,55 @@
-# Unit Test Cases Workflow Agents
+# AEM Development Automation Toolkit
 
-Comprehensive AI workflow agents for orchestrating unit test case creation across multiple repositories with advanced optimization, permission gates, and local build validation.
+AI-powered and rule-driven automation for Adobe AEM as a Cloud Service (AEMaaCS) projects: unit test generation, Spring Boot testing, and rule-driven quality analysis.
 
-## Available Agents
+## Available Workflows
+
+### Testing & Code Generation (AI-Driven)
 
 🏗️ **AEM Unit Test Cases** (`aem-unit-test-cases`)
 - For Adobe AEM Sites backend projects
-- AEM-specific testing patterns
-- JUnit, Mockito, AEM Mocks
+- Generates high-quality unit tests with 80%+ coverage
+- AEM-specific testing patterns (Sling Models, Servlets, Services)
+- Framework: JUnit, Mockito, AEM Mocks
 
 🚀 **Spring Boot Unit Test Cases** (`spring-boot-unit-test-cases`)
 - For Spring Boot applications
-- Spring Boot testing patterns  
-- JUnit, Mockito, Spring Test
+- Generates high-quality unit tests with 80%+ coverage  
+- Spring Boot-specific testing patterns
+- Framework: JUnit, Mockito, Spring Test
 
-Both agents share identical architecture with technology-specific optimizations.
+### Quality & Compliance (Rule-Driven, Zero AI for Scanning)
+
+📊 **AEM Quality Gate** (`aem-quality-gate`)
+- Rule-driven static analysis for AEMaaCS projects
+- Enforces Java, Sling, HTL, JavaScript, CSS, and HTML best practices
+- **Zero LLM tokens consumed for scanning** — uses deterministic rule engines
+- Optional AI enhancement for rule tuning only
+- Generates A-E quality ratings per dimension
 
 ## Overview
 
-The **AEM Unit Test Cases** agent is a multi-stage workflow that:
+### Test Generation Agents
 
-✅ **Token Optimized** - 47% reduction in token usage vs. previous version
+The **AEM Unit Test Cases** and **Spring Boot Unit Test Cases** are AI-driven workflows that:
+
+✅ **Token Optimized** - 47% reduction in token usage
 ✅ **Safe by Default** - Explicit approval gates for setup, generation, and validation
 ✅ **Trusted Mode Ready** - Optional fast-track for power users (skip gates, keep validation)
 ✅ **Build-Validated** - Local Maven builds tested before pushing to remote
 ✅ **Centrally Organized** - Enforces strict repository location
-✅ **Production-Ready** - Auto-push when validation passes
+✅ **Production-Ready** - Auto-push to feature branch when validation passes
+
+### Quality Gate Workflow
+
+The **AEM Quality Gate** is a rule-driven static analysis tool that:
+
+✅ **Zero-Token Scanning** - All checks run locally via deterministic rule engines (PMD, Checkstyle, ESLint, Stylelint)
+✅ **No AI Required for Scans** - Fastest, most cost-efficient scanning
+✅ **AI-Enhanced Rule Tuning** - Optional: AI reads reports and proposes rule improvements (never re-analyzes code)
+✅ **Comprehensive Coverage** - Java, Sling, HTL, JavaScript, CSS, HTML, Clientlibs
+✅ **AEMaaCS-Optimized** - Built-in rules for ResourceResolver leaks, Sling Model issues, WCMUsePojo, etc.
+✅ **SonarQube-Like Reporting** - A-E dimension ratings with severity-normalized findings
 
 ## Features
 
@@ -228,40 +252,98 @@ The workflow returns a comprehensive result object:
 - **⊘ SKIPPED** - User denied permission at some gate
 - **✗ FAILED** - Error during setup, generation, or validation
 
-## Choosing Your Agent
+## Choosing Your Workflow
 
-### AEM Projects? Use `aem-unit-test-cases`
+### For Test Generation
+
+**AEM Projects?** Use `aem-unit-test-cases`
 ```bash
-/aem-unit-test-cases --args '{"testCases": [...]}'
+/aem-unit-test-cases --args '{
+  "testCases": [{
+    "repoUrl": "https://github.com/org/aem-project.git",
+    "productionBranch": "main",
+    "testCases": "UserService, AuthController"
+  }]
+}'
 ```
 
-### Spring Boot Projects? Use `spring-boot-unit-test-cases`
+**Spring Boot Projects?** Use `spring-boot-unit-test-cases`
 ```bash
-/spring-boot-unit-test-cases --args '{"testCases": [...]}'
+/spring-boot-unit-test-cases --args '{
+  "testCases": [{
+    "repoUrl": "https://github.com/org/spring-app.git",
+    "productionBranch": "main",
+    "testCases": "UserService, OrderController"
+  }]
+}'
 ```
 
 👉 See [WORKFLOWS-COMPARISON.md](docs/WORKFLOWS-COMPARISON.md) for detailed comparison
 
+### For Quality Analysis
+
+**Any AEMaaCS Project?** Use `aem-quality-gate`
+```bash
+/aem-quality-gate --args '{
+  "repositories": [{
+    "repoUrl": "https://github.com/org/aem-project.git",
+    "repoName": "my-aem-app",
+    "branch": "main"
+  }]
+}'
+```
+
+✨ Zero AI tokens consumed for scanning — rule engines run locally
+
+👉 See [AEM-QUALITY-GATE-GUIDE.md](docs/AEM-QUALITY-GATE-GUIDE.md) for detailed guide
+
 ## Documentation
 
+### Test Generation
 - **[WORKFLOWS-COMPARISON.md](docs/WORKFLOWS-COMPARISON.md)** - Compare AEM vs Spring Boot agents
 - **[TRUSTED-MODE-GUIDE.md](docs/TRUSTED-MODE-GUIDE.md)** - Safe Mode vs Trusted Mode, use cases, and best practices
 - **[SPRING-BOOT-WORKFLOW-GUIDE.md](docs/SPRING-BOOT-WORKFLOW-GUIDE.md)** - Spring Boot agent guide
 - **[AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md](docs/AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md)** - AEM agent technical guide
 - **[AEM-UNIT-TEST-CASES-BEFORE-AFTER.md](docs/AEM-UNIT-TEST-CASES-BEFORE-AFTER.md)** - AEM before/after comparison
 
+### Quality Analysis
+- **[AEM-QUALITY-GATE-GUIDE.md](docs/AEM-QUALITY-GATE-GUIDE.md)** - Complete Quality Gate guide, usage, rules, and CI/CD integration
+- **[README.md](quality-gate/)** - Quality Gate toolkit directory with rule definitions
+
 ## File Structure
 
 ```
 ai-agent/
 ├── README.md                                          # This file
+├── QUICKSTART.md                                      # 5-minute setup guide
+├── CHANGELOG.md                                       # Version history
 ├── workflows/
-│   └── aem-unit-test-cases.js                         # Main workflow agent
+│   ├── aem-unit-test-cases.js                         # AEM test generation
+│   ├── spring-boot-unit-test-cases.js                 # Spring Boot test generation
+│   └── aem-quality-gate.js                            # Quality analysis (NEW)
+├── quality-gate/                                      # Quality Gate Toolkit (NEW)
+│   ├── package.json                                   # Frontend tools (ESLint, Stylelint)
+│   ├── rules-manifest.json                            # Master rule catalog
+│   ├── rules/
+│   │   ├── java/                                      # PMD + Checkstyle configs
+│   │   ├── frontend/                                  # ESLint, Stylelint, HTMLHint configs
+│   │   ├── htl/                                       # HTL validator config
+│   │   └── custom/                                    # Custom clientlib checker
+│   ├── runner/
+│   │   └── run-quality-gate.sh                        # Orchestrates all engines
+│   └── aggregator/
+│       └── aggregate-report.js                        # Parses outputs into unified report
 ├── docs/
-│   ├── AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md           # Technical documentation
-│   └── AEM-UNIT-TEST-CASES-BEFORE-AFTER.md            # Comparison guide
+│   ├── WORKFLOWS-COMPARISON.md                        # AEM vs Spring Boot
+│   ├── TRUSTED-MODE-GUIDE.md                          # Safe vs Trusted Mode
+│   ├── SPRING-BOOT-WORKFLOW-GUIDE.md                  # Spring Boot guide
+│   ├── AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md           # AEM technical deep-dive
+│   ├── AEM-UNIT-TEST-CASES-BEFORE-AFTER.md            # AEM before/after
+│   └── AEM-QUALITY-GATE-GUIDE.md                      # Quality Gate complete guide (NEW)
 └── examples/
-    └── (Sample test cases and configurations)
+    ├── sample-config.json                             # AEM test generation examples
+    ├── spring-boot-examples.json                      # Spring Boot test examples
+    └── quality-gate-examples.json                     # Quality Gate examples (NEW)
 ```
 
 ## Key Optimizations

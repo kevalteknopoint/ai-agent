@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+  "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<module name="Checker">
+  <property name="charset" value="UTF-8"/>
+  <property name="severity" value="warning"/>
+
+  <!-- Suppression filter -->
+  <module name="SuppressionFilter">
+    <property name="file" value="${checkstyle.suppressions.file}" default="checkstyle-suppressions.xml"/>
+    <property name="optional" value="true"/>
+  </module>
+
+  <!-- File-level checks -->
+  <module name="FileLength">
+    <property name="max" value="2000"/>
+    <property name="severity" value="warning"/>
+  </module>
+
+  <module name="FileTabCharacter">
+    <property name="eachLine" value="true"/>
+  </module>
+
+  <module name="NewlineAtEndOfFile"/>
+
+  <!-- TreeWalker for source-level checks -->
+  <module name="TreeWalker">
+    <property name="tabWidth" value="4"/>
+
+    <!-- ========== JAVADOC ========== -->
+    <module name="JavadocMethod">
+      <property name="scope" value="public"/>
+      <property name="allowMissingParamTags" value="false"/>
+      <property name="allowMissingThrowsTags" value="false"/>
+      <property name="allowMissingReturnTag" value="false"/>
+    </module>
+
+    <module name="JavadocType">
+      <property name="scope" value="public"/>
+    </module>
+
+    <module name="JavadocVariable">
+      <property name="scope" value="public"/>
+    </module>
+
+    <module name="MissingJavadocMethod">
+      <property name="scope" value="public"/>
+    </module>
+
+    <!-- ========== NAMING CONVENTIONS ========== -->
+    <module name="PackageName">
+      <property name="format" value="^com\.([a-z][a-z0-9]*)+(\.[a-z][a-z0-9]*)*$"/>
+      <message key="name.invalidPattern" value="Package name ''{0}'' must match pattern ''{1}'' (e.g., com.client.app.core)"/>
+    </module>
+
+    <module name="TypeName">
+      <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+    </module>
+
+    <module name="MethodName">
+      <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+    </module>
+
+    <module name="ConstantName">
+      <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+      <property name="tokens" value="VARIABLE_DEF"/>
+    </module>
+
+    <module name="LocalVariableName">
+      <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+    </module>
+
+    <module name="CatchParameterName">
+      <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+    </module>
+
+    <!-- ========== IMPORTS ========== -->
+    <module name="AvoidStarImport"/>
+
+    <module name="UnusedImports"/>
+
+    <module name="ImportOrder">
+      <property name="groups" value="STATIC,STANDARD_JAVA_PACKAGE,SPECIAL_IMPORTS,THIRD_PARTY_PACKAGE"/>
+      <property name="ordered" value="true"/>
+      <property name="separated" value="true"/>
+      <property name="option" value="under"/>
+      <property name="staticGroups" value="STATIC"/>
+      <property name="sortStaticImportsAlphabetically" value="true"/>
+      <property name="useContainerOrderingForStaticImports" value="true"/>
+    </module>
+
+    <!-- ========== SIZE VIOLATIONS ========== -->
+    <module name="LineLength">
+      <property name="fileExtensions" value="java"/>
+      <property name="max" value="120"/>
+      <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
+    </module>
+
+    <module name="MethodLength">
+      <property name="tokens" value="METHOD_DEF,CTOR_DEF"/>
+      <property name="max" value="100"/>
+      <property name="countEmpty" value="false"/>
+    </module>
+
+    <module name="ParameterNumber">
+      <property name="max" value="8"/>
+      <property name="tokens" value="METHOD_DEF,CTOR_DEF"/>
+    </module>
+
+    <!-- ========== WHITESPACE ========== -->
+    <module name="GenericWhitespace"/>
+
+    <module name="MethodParamPad"/>
+
+    <module name="NoWhitespaceAfter">
+      <property name="tokens" value="BNOT,DEC,DOT,LNOT,UNARY_MINUS,UNARY_PLUS"/>
+    </module>
+
+    <module name="NoWhitespaceBefore">
+      <property name="tokens" value="COMMA,SEMI,POST_DEC,POST_INC"/>
+    </module>
+
+    <module name="OperatorWrap">
+      <property name="option" value="nl"/>
+      <property name="tokens" value="BAND,BOR,BSR,BXOR,DIV,EQUAL,GE,GT,LE,LITERAL_AND,LITERAL_OR,LT,MINUS,MOD,NOT_EQUAL,PLUS,QUESTION,SL,SR,STAR,METHOD_REF"/>
+    </module>
+
+    <module name="ParenPad">
+      <property name="option" value="space"/>
+      <property name="tokens" value="CTOR_DEF,LITERAL_CATCH,LITERAL_DO,LITERAL_FOR,LITERAL_IF,LITERAL_SWITCH,LITERAL_SYNCHRONIZED,LITERAL_WHILE,METHOD_CALL,METHOD_DEF,SUPER_CTOR_CALL,LAMBDA,RECORD_DEF"/>
+    </module>
+
+    <module name="TypecastParenPad">
+      <property name="option" value="nospace"/>
+    </module>
+
+    <!-- ========== MODIFIERS ========== -->
+    <module name="ModifierOrder"/>
+
+    <module name="RedundantModifier"/>
+
+    <!-- ========== CODING PRACTICES ========== -->
+    <module name="EqualsHashCode"/>
+
+    <module name="SimplifyBooleanExpression"/>
+
+    <module name="SimplifyBooleanReturn"/>
+
+    <module name="NestedTryDepth">
+      <property name="max" value="2"/>
+    </module>
+
+    <module name="MultipleVariableDeclarations"/>
+
+    <module name="OneStatementPerLine"/>
+
+    <module name="FinalClass"/>
+
+    <module name="HideUtilityClassConstructor"/>
+
+    <!-- ========== CONTROL FLOW ========== -->
+    <module name="EmptyStatement"/>
+
+    <module name="DefaultComesLast"/>
+
+    <!-- ========== MISCELLANEOUS ========== -->
+    <module name="CommentsIndentation"/>
+
+    <module name="Indentation">
+      <property name="basicOffset" value="4"/>
+      <property name="braceAdjustment" value="0"/>
+      <property name="caseIndent" value="4"/>
+      <property name="throwsIndent" value="8"/>
+    </module>
+
+    <module name="ArrayTypeStyle"/>
+
+    <module name="UpperEll"/>
+
+    <module name="StringLiteralEquality"/>
+  </module>
+</module>

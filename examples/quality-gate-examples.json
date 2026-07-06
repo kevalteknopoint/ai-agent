@@ -1,0 +1,210 @@
+{
+  "comment": "Example configurations for AEM Quality Gate workflow",
+
+  "example_1_single_repo_safe_mode": {
+    "description": "Analyze a single AEM repository with explicit approval gates",
+    "invocation": "/aem-quality-gate --args '{...}'",
+    "config": {
+      "repositories": [
+        {
+          "repoUrl": "https://github.com/your-org/aem-core.git",
+          "repoName": "aem-core",
+          "branch": "main"
+        }
+      ]
+    },
+    "notes": [
+      "Safe Mode (default) — you'll see permission gates for setup",
+      "Scanning and reporting run automatically (no gates)",
+      "Reports saved to /Users/kevaljoshi/Documents/project-source/project-unit-test cases/repos/aem-core/quality-reports/",
+      "Duration: ~5-10 minutes depending on project size"
+    ]
+  },
+
+  "example_2_multiple_repos_trusted_mode": {
+    "description": "Analyze multiple repositories in fully automated mode",
+    "config": {
+      "trustedMode": true,
+      "repositories": [
+        {
+          "repoUrl": "https://github.com/your-org/aem-core.git",
+          "repoName": "aem-core",
+          "branch": "main"
+        },
+        {
+          "repoUrl": "https://github.com/your-org/aem-models.git",
+          "repoName": "aem-models",
+          "branch": "develop"
+        },
+        {
+          "repoUrl": "https://github.com/your-org/aem-services.git",
+          "repoName": "aem-services",
+          "branch": "main"
+        }
+      ]
+    },
+    "notes": [
+      "Trusted Mode — zero approval gates, fully automated",
+      "All 3 repos scanned in parallel where possible",
+      "Perfect for CI/CD pipelines and scheduled batch runs",
+      "Returns aggregated quality ratings for all repos"
+    ]
+  },
+
+  "example_3_with_ai_curation": {
+    "description": "Analyze project and propose AI-driven rule tuning",
+    "config": {
+      "repositories": [
+        {
+          "repoUrl": "https://github.com/your-org/aem-project.git",
+          "repoName": "aem-project",
+          "branch": "main"
+        }
+      ],
+      "aiCuration": true
+    },
+    "notes": [
+      "Safe Mode + AI Curation enabled",
+      "After scanning, AI reads the aggregated report and proposes:",
+      "  - Rule severity adjustments (e.g., demote noisy rules)",
+      "  - Suppressions for false positives",
+      "  - New rule candidates for uncovered patterns",
+      "You review and approve/deny the proposals",
+      "Approved changes update rules-manifest.json for future scans",
+      "No code re-analysis by AI — only rule definition optimization"
+    ]
+  },
+
+  "example_4_custom_location_ci_cd": {
+    "description": "CI/CD pipeline with custom repository location",
+    "config": {
+      "trustedMode": true,
+      "baseDir": "/ci/aem-quality-reports",
+      "repositories": [
+        {
+          "repoUrl": "https://github.com/your-org/aem-project.git",
+          "repoName": "aem-project",
+          "branch": "main"
+        }
+      ]
+    },
+    "ciExecution": "github-actions",
+    "ciCode": ".github/workflows/quality-gate.yml:\n  - name: Run AEM Quality Gate\n    run: |\n      /aem-quality-gate --args '{\n        \"trustedMode\": true,\n        \"baseDir\": \"/runner/quality\",\n        \"repositories\": [{\n          \"repoUrl\": \"${{ github.repository }}\",\n          \"repoName\": \"${GITHUB_REF##*/}\",\n          \"branch\": \"${{ github.ref_name }}\"\n        }]\n      }'\n\n  - name: Upload Quality Reports\n    uses: actions/upload-artifact@v3\n    with:\n      name: quality-gate-reports\n      path: /runner/quality/**/quality-reports/",
+    "notes": [
+      "baseDir defaults to /Users/kevaljoshi/.../project-unit-test cases/repos",
+      "Use custom baseDir for CI/CD runners where default path doesn't exist",
+      "All reports stored in /ci/aem-quality-reports/",
+      "Reports can be uploaded as GitHub artifacts or archived"
+    ]
+  },
+
+  "example_5_comprehensive_governance": {
+    "description": "Comprehensive quality governance: org-wide scanning with curation",
+    "config": {
+      "trustedMode": true,
+      "baseDir": "/governance/quality-scans",
+      "repositories": [
+        {
+          "repoUrl": "https://github.com/your-org/aem-core.git",
+          "repoName": "aem-core",
+          "branch": "main"
+        },
+        {
+          "repoUrl": "https://github.com/your-org/aem-models.git",
+          "repoName": "aem-models",
+          "branch": "main"
+        },
+        {
+          "repoUrl": "https://github.com/your-org/aem-frontend.git",
+          "repoName": "aem-frontend",
+          "branch": "main"
+        },
+        {
+          "repoUrl": "https://github.com/your-org/aem-services.git",
+          "repoName": "aem-services",
+          "branch": "main"
+        }
+      ]
+    },
+    "schedule": "Weekly (Monday 2am)",
+    "postScan": {
+      "step1": "Aggregate all reports",
+      "step2": "Track trends over time",
+      "step3": "Quarterly: run with aiCuration: true to propose rule updates",
+      "step4": "Report to stakeholders: which dimensions are improving/regressing"
+    },
+    "notes": [
+      "Scans 4 major repos in parallel",
+      "Stores historical reports for trend analysis",
+      "Identify which teams/repos have best quality culture",
+      "Use AI curation quarterly, not on every scan",
+      "Reports shared with architecture and security teams"
+    ]
+  },
+
+  "example_6_pr_validation": {
+    "description": "Pull request validation — test quality before merge",
+    "config": {
+      "trustedMode": false,
+      "repositories": [
+        {
+          "repoUrl": "https://github.com/your-org/aem-project.git",
+          "repoName": "aem-project",
+          "branch": "${{ github.head_ref }}"
+        }
+      ]
+    },
+    "ciExecution": "github-actions-pr-check",
+    "ciCode": ".github/workflows/quality-gate-pr.yml:\nname: Quality Gate PR Check\non: [pull_request]\njobs:\n  quality:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n        with:\n          ref: ${{ github.head_ref }}\n      \n      - name: Run Quality Gate on PR\n        run: |\n          /aem-quality-gate --args '{\n            \"repositories\": [{\n              \"repoUrl\": \"${{ github.repository }}\",\n              \"repoName\": \"pr-check\",\n              \"branch\": \"${{ github.head_ref }}\"\n            }]\n          }'\n      \n      - name: Comment Results on PR\n        if: always()\n        uses: actions/github-script@v6\n        with:\n          script: |\n            const fs = require('fs');\n            const report = JSON.parse(fs.readFileSync('...quality-reports/.../aggregated-report.json'));\n            github.rest.issues.createComment({\n              issue_number: context.issue.number,\n              owner: context.repo.owner,\n              repo: context.repo.repo,\n              body: `## Quality Gate Results\\n\\n- Overall Rating: ${report.summary.overallRating}\\n- Total Findings: ${report.summary.totalFindings}\\n...`\n            });\n",
+    "notes": [
+      "Safe Mode (user must approve setup) — or use trustedMode for full automation",
+      "Runs quality gate on each PR",
+      "Comments results directly on PR for visibility",
+      "Developers see quality impact before merge",
+      "Not blocking (soft gate) — allows merge, but flags issues"
+    ]
+  },
+
+  "example_7_dev_local_workflow": {
+    "description": "Developer local workflow — quick feedback during development",
+    "config": {
+      "repositories": [
+        {
+          "repoUrl": "file:///Users/alice/projects/my-aem-app",
+          "repoName": "my-app-local",
+          "branch": "feature/component-x"
+        }
+      ]
+    },
+    "usage": "1. Developer is working on feature/component-x locally\n2. Run: /aem-quality-gate --args '{...}'\n3. Quality Gate clones from local path, scans, reports\n4. Developer reviews findings in quality-reports/ directory\n5. Fixes blocker/critical issues before pushing\n6. Re-runs quality gate to confirm improvements",
+    "notes": [
+      "repoUrl can be a local file:// path for testing without network",
+      "Safe Mode gives developer time to review before auto-scanning",
+      "Reports help identify issues early, before code review",
+      "Much faster iteration than waiting for CI/CD feedback"
+    ]
+  },
+
+  "example_8_gradual_enforcement": {
+    "description": "Gradual rule enforcement — start permissive, tighten over time",
+    "scenario": "Organization wants to adopt quality gates but has legacy code with 1000+ issues",
+    "approach": [
+      "Month 1: Run quality gate, gather baseline metrics (all rules enabled)",
+      "Month 1-2: Disable rules that are 50%+ false positives via rules-manifest.json",
+      "Month 2-3: Address blocker/critical findings in backlog",
+      "Month 3-4: Use AI curation to propose new rules",
+      "Month 4+: Gradually enforce: promote rules from 'info' → 'minor' → 'major'",
+      "Monthly: review trends, celebrate improvements"
+    ],
+    "config": {
+      "repositories": [{"repoUrl": "...", "repoName": "legacy-project", "branch": "main"}],
+      "aiCuration": true
+    },
+    "notes": [
+      "Don't enable all rules at once on legacy code — too much noise, low adoption",
+      "Start permissive, gradually tighten — gives teams time to improve",
+      "Use AI curation monthly to refine rule set based on actual findings",
+      "Track per-dimension ratings monthly to show progress to leadership"
+    ]
+  }
+}

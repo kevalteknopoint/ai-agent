@@ -1,0 +1,383 @@
+{
+  "manifest": {
+    "version": "1.0.0",
+    "description": "Master catalog of all quality rules for AEMaaCS projects",
+    "lastUpdated": "2026-07-06",
+    "dimensions": ["Java", "Sling/AEM", "HTL", "JavaScript", "CSS", "HTML"]
+  },
+  "rules": [
+    {
+      "id": "aem-resource-resolver-leak",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "security",
+      "severity": "blocker",
+      "rationale": "ResourceResolver must be closed via try-with-resources or finally block to prevent memory leaks and login-session exhaustion",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-aem-sling.xml",
+      "xpathRule": "//ClassOrInterfaceDeclaration[.//MethodDeclaration[.//VariableDeclarator[contains(@Image, 'ResourceResolver')]]][not(.//TryStatement[.//ResourceSpecification])]"
+    },
+    {
+      "id": "aem-jcr-session-not-closed",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "security",
+      "severity": "blocker",
+      "rationale": "JCR Session.logout() must be called in finally block or try-with-resources to prevent session leaks",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-aem-sling.xml",
+      "xpathRule": "//ClassOrInterfaceDeclaration[.//MethodDeclaration[.//VariableDeclarator[contains(@Image, 'Session')]]][not(.//TryStatement)]"
+    },
+    {
+      "id": "aem-administrative-resolver",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "security",
+      "severity": "critical",
+      "rationale": "Use service user login instead of getAdministrativeResourceResolver() or loginAdministrative() — security/auditing risk",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-aem-sling.xml",
+      "xpathRule": "//MethodInvocation[count(Arguments/ArgumentList/Expression) = 0][MethodName[contains(., 'getAdministrativeResourceResolver') or contains(., 'loginAdministrative')]]"
+    },
+    {
+      "id": "aem-wcm-use-pojo-deprecated",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "correctness",
+      "severity": "major",
+      "rationale": "WCMUsePojo is deprecated — use Sling Models with @Model annotation instead",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-aem-sling.xml",
+      "xpathRule": "//ClassOrInterfaceDeclaration[ExtendsList/ClassOrInterfaceType[contains(@Image, 'WCMUsePojo')]]"
+    },
+    {
+      "id": "aem-adapto-null-check",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "correctness",
+      "severity": "major",
+      "rationale": "adaptTo() can return null — must check result before use",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-aem-sling.xml",
+      "xpathRule": "//MethodInvocation[MethodName[contains(., 'adaptTo')]][not(ancestor::IfStatement)]"
+    },
+    {
+      "id": "aem-sling-model-missing-optional",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "correctness",
+      "severity": "major",
+      "rationale": "Sling Model fields that can be null should have @Optional or @Default annotation",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-aem-sling.xml"
+    },
+    {
+      "id": "aem-hardcoded-content-path",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "design",
+      "severity": "major",
+      "rationale": "Hardcoded /content/ paths reduce portability — use configurable paths instead",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-aem-sling.xml",
+      "xpathRule": "//StringLiteral[contains(@Image, '/content/')]"
+    },
+    {
+      "id": "aem-servlet-path-too-broad",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "security",
+      "severity": "major",
+      "rationale": "Servlet resource bindings should be specific (avoid .* or / patterns)",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-aem-sling.xml"
+    },
+    {
+      "id": "java-nullpointer-dereference",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "errorprone",
+      "severity": "critical",
+      "rationale": "Potential null pointer dereference — add null checks before use",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-java-general.xml"
+    },
+    {
+      "id": "java-errorprone",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "errorprone",
+      "severity": "major",
+      "rationale": "Common error-prone patterns (catching Throwable, empty catch blocks, etc.)",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-java-general.xml"
+    },
+    {
+      "id": "java-bestpractices",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "bestpractices",
+      "severity": "minor",
+      "rationale": "Best practice violations (unused variables, unclosed resources, etc.)",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-java-general.xml"
+    },
+    {
+      "id": "java-design-cyclomatic-complexity",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "design",
+      "severity": "major",
+      "rationale": "Method cyclomatic complexity exceeds threshold (default: 10) — refactor into smaller methods",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-java-general.xml"
+    },
+    {
+      "id": "java-design-god-class",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "design",
+      "severity": "major",
+      "rationale": "Class has too many methods/fields — split into multiple focused classes",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-java-general.xml"
+    },
+    {
+      "id": "java-performance",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "performance",
+      "severity": "minor",
+      "rationale": "Performance anti-patterns (String concatenation in loops, unnecessary object creation, etc.)",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-java-general.xml"
+    },
+    {
+      "id": "checkstyle-package-name",
+      "engine": "checkstyle",
+      "dimension": "Java",
+      "category": "style",
+      "severity": "minor",
+      "rationale": "Package names should follow convention: com.<client>.<app>.core.* (and variants)",
+      "enabled": true,
+      "sourceFile": "rules/java/checkstyle-aem.xml"
+    },
+    {
+      "id": "checkstyle-javadoc-public",
+      "engine": "checkstyle",
+      "dimension": "Java",
+      "category": "documentation",
+      "severity": "minor",
+      "rationale": "Public classes and methods should have Javadoc comments",
+      "enabled": true,
+      "sourceFile": "rules/java/checkstyle-aem.xml"
+    },
+    {
+      "id": "checkstyle-import-order",
+      "engine": "checkstyle",
+      "dimension": "Java",
+      "category": "style",
+      "severity": "minor",
+      "rationale": "Imports should be organized by group (java.*, javax.*, org.*, com.*)",
+      "enabled": true,
+      "sourceFile": "rules/java/checkstyle-aem.xml"
+    },
+    {
+      "id": "checkstyle-wildcard-imports",
+      "engine": "checkstyle",
+      "dimension": "Java",
+      "category": "style",
+      "severity": "minor",
+      "rationale": "Avoid wildcard imports — explicitly import needed classes",
+      "enabled": true,
+      "sourceFile": "rules/java/checkstyle-aem.xml"
+    },
+    {
+      "id": "checkstyle-line-length",
+      "engine": "checkstyle",
+      "dimension": "Java",
+      "category": "style",
+      "severity": "minor",
+      "rationale": "Line length should not exceed 120 characters for readability",
+      "enabled": true,
+      "sourceFile": "rules/java/checkstyle-aem.xml",
+      "params": {"max": 120}
+    },
+    {
+      "id": "htl-syntax-validation",
+      "engine": "htl",
+      "dimension": "HTL",
+      "category": "correctness",
+      "severity": "blocker",
+      "rationale": "HTL syntax errors — invalid HTL expressions or structure",
+      "enabled": true,
+      "sourceFile": "rules/htl/htl-validate-notes.md"
+    },
+    {
+      "id": "htl-inline-script-style",
+      "engine": "htl",
+      "dimension": "HTL",
+      "category": "security",
+      "severity": "major",
+      "rationale": "Avoid inline <script> or <style> in component HTL — use clientlibs instead",
+      "enabled": true,
+      "sourceFile": "rules/htl/htl-validate-notes.md"
+    },
+    {
+      "id": "htl-wcm-use-pojo-reference",
+      "engine": "htl",
+      "dimension": "HTL",
+      "category": "correctness",
+      "severity": "major",
+      "rationale": "data-sly-use should not reference WCMUsePojo — use Sling Models instead",
+      "enabled": true,
+      "sourceFile": "rules/htl/htl-validate-notes.md"
+    },
+    {
+      "id": "eslint-typescript-recommended",
+      "engine": "eslint",
+      "dimension": "JavaScript",
+      "category": "correctness",
+      "severity": "major",
+      "rationale": "@typescript-eslint/recommended rules — type safety, unused variables, etc.",
+      "enabled": true,
+      "sourceFile": "rules/frontend/eslint.config.aem.mjs"
+    },
+    {
+      "id": "eslint-no-unused-vars",
+      "engine": "eslint",
+      "dimension": "JavaScript",
+      "category": "style",
+      "severity": "minor",
+      "rationale": "Unused variables should be removed",
+      "enabled": true,
+      "sourceFile": "rules/frontend/eslint.config.aem.mjs"
+    },
+    {
+      "id": "eslint-curly-braces",
+      "engine": "eslint",
+      "dimension": "JavaScript",
+      "category": "style",
+      "severity": "minor",
+      "rationale": "Always use curly braces in control structures (if, for, while)",
+      "enabled": true,
+      "sourceFile": "rules/frontend/eslint.config.aem.mjs"
+    },
+    {
+      "id": "eslint-line-length",
+      "engine": "eslint",
+      "dimension": "JavaScript",
+      "category": "style",
+      "severity": "info",
+      "rationale": "Maximum line length is 120 characters",
+      "enabled": true,
+      "sourceFile": "rules/frontend/eslint.config.aem.mjs",
+      "params": {"code": 120}
+    },
+    {
+      "id": "stylelint-no-duplicate-selectors",
+      "engine": "stylelint",
+      "dimension": "CSS",
+      "category": "style",
+      "severity": "minor",
+      "rationale": "CSS selectors should not be duplicated within a file",
+      "enabled": true,
+      "sourceFile": "rules/frontend/stylelint.aem.json"
+    },
+    {
+      "id": "stylelint-no-important",
+      "engine": "stylelint",
+      "dimension": "CSS",
+      "category": "design",
+      "severity": "major",
+      "rationale": "Overuse of !important indicates styling problems — refactor selectors instead",
+      "enabled": true,
+      "sourceFile": "rules/frontend/stylelint.aem.json"
+    },
+    {
+      "id": "stylelint-standard-config",
+      "engine": "stylelint",
+      "dimension": "CSS",
+      "category": "style",
+      "severity": "minor",
+      "rationale": "stylelint-config-standard rules (spacing, naming, etc.)",
+      "enabled": true,
+      "sourceFile": "rules/frontend/stylelint.aem.json"
+    },
+    {
+      "id": "htmlhint-semantic-html",
+      "engine": "htmlhint",
+      "dimension": "HTML",
+      "category": "accessibility",
+      "severity": "minor",
+      "rationale": "Use semantic HTML5 elements appropriately",
+      "enabled": true,
+      "sourceFile": "rules/frontend/htmlhint.aem.json"
+    },
+    {
+      "id": "clientlib-category-naming",
+      "engine": "custom",
+      "dimension": "HTML",
+      "category": "design",
+      "severity": "major",
+      "rationale": "Clientlib category names should follow convention: <client>.<app>.<component|grid|etc>",
+      "enabled": true,
+      "sourceFile": "rules/custom/clientlib-conventions.js"
+    },
+    {
+      "id": "clientlib-file-references",
+      "engine": "custom",
+      "dimension": "HTML",
+      "category": "correctness",
+      "severity": "major",
+      "rationale": "js.txt and css.txt must reference files that exist in the clientlib",
+      "enabled": true,
+      "sourceFile": "rules/custom/clientlib-conventions.js"
+    },
+    {
+      "id": "clientlib-embed-vs-dependencies",
+      "engine": "custom",
+      "dimension": "HTML",
+      "category": "design",
+      "severity": "major",
+      "rationale": "Use 'embed' for same-project dependencies, 'dependencies' for external ones",
+      "enabled": true,
+      "sourceFile": "rules/custom/clientlib-conventions.js"
+    }
+  ],
+  "severityLevels": {
+    "blocker": {
+      "rating": "E",
+      "description": "Will crash or cause critical runtime failure",
+      "action": "FIX IMMEDIATELY"
+    },
+    "critical": {
+      "rating": "D",
+      "description": "Security, correctness, or major functional risk",
+      "action": "Fix before merge"
+    },
+    "major": {
+      "rating": "C",
+      "description": "Significant maintainability, design, or performance issue",
+      "action": "Fix in this sprint"
+    },
+    "minor": {
+      "rating": "B",
+      "description": "Style, consistency, or minor best-practice violation",
+      "action": "Fix when convenient"
+    },
+    "info": {
+      "rating": "A",
+      "description": "Advisory — informational only",
+      "action": "Consider fixing"
+    }
+  },
+  "dimensionWeights": {
+    "Sling/AEM": 0.35,
+    "Java": 0.25,
+    "HTL": 0.15,
+    "JavaScript": 0.10,
+    "CSS": 0.10,
+    "HTML": 0.05
+  }
+}

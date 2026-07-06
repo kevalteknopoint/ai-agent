@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Java-General-Best-Practices"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+  <description>
+    General Java best practices, error-prone patterns, design issues, and performance anti-patterns.
+    Uses PMD's built-in rule categories with customized severity levels for AEM projects.
+  </description>
+
+  <!-- ========== ERROR-PRONE PATTERNS ========== -->
+  <rule ref="category/java/errorprone.xml">
+    <exclude name="AvoidDuplicateLiterals"/>
+    <exclude name="AvoidLiteralsInIfCondition"/>
+    <exclude name="DoNotThrowExceptionInFinally"/>
+  </rule>
+
+  <!-- ========== BEST PRACTICES ========== -->
+  <rule ref="category/java/bestpractices.xml">
+    <exclude name="AbstractClassWithoutAbstractMethod"/>
+    <exclude name="AccessorMethodGeneration"/>
+    <exclude name="PrimitiveWrapperInstantiation"/>
+    <exclude name="ReplaceVectorWithArrayList"/>
+  </rule>
+
+  <!-- ========== DESIGN ISSUES ========== -->
+  <rule ref="category/java/design.xml/CyclomaticComplexity">
+    <priority>2</priority>
+    <properties>
+      <property name="reportLevel" value="10"/>
+    </properties>
+  </rule>
+
+  <rule ref="category/java/design.xml/NcssCount">
+    <priority>3</priority>
+    <properties>
+      <property name="methodReportLevel" value="40"/>
+      <property name="classReportLevel" value="1000"/>
+    </properties>
+  </rule>
+
+  <rule ref="category/java/design.xml/NPathComplexity">
+    <priority>2</priority>
+    <properties>
+      <property name="reportLevel" value="200"/>
+    </properties>
+  </rule>
+
+  <rule ref="category/java/design.xml/TooManyMethods">
+    <priority>2</priority>
+    <properties>
+      <property name="maxmethods" value="30"/>
+    </properties>
+  </rule>
+
+  <rule ref="category/java/design.xml/TooManyFields">
+    <priority>3</priority>
+    <properties>
+      <property name="maxfields" value="20"/>
+    </properties>
+  </rule>
+
+  <!-- ========== PERFORMANCE ========== -->
+  <rule ref="category/java/performance.xml">
+    <exclude name="AvoidUsingShortType"/>
+    <exclude name="InefficientStringBuffering"/>
+  </rule>
+
+  <!-- ========== MULTITHREADING ========== -->
+  <rule ref="category/java/multithreading.xml">
+    <exclude name="DoubleCheckedLocking"/>
+  </rule>
+
+  <!-- ========== SECURITY (javax.* APIs) ========== -->
+  <rule ref="category/java/security.xml">
+  </rule>
+</ruleset>

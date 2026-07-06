@@ -1,0 +1,94 @@
+{
+  "extends": [
+    "stylelint-config-standard",
+    "stylelint-config-standard-scss"
+  ],
+  "customSyntax": "postcss-scss",
+  "rules": {
+    "selector-pseudo-element-no-unknown": [
+      true,
+      {
+        "ignorePseudoElements": [
+          "ng-deep"
+        ]
+      }
+    ],
+    "at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": [
+          "extend",
+          "at-root",
+          "debug",
+          "warn",
+          "error",
+          "if",
+          "else",
+          "for",
+          "each",
+          "while",
+          "mixin",
+          "include",
+          "function",
+          "return",
+          "content"
+        ]
+      }
+    ],
+    "max-nesting-depth": [
+      3,
+      {
+        "ignore": [
+          "pseudo-classes",
+          "at-rules"
+        ]
+      }
+    ],
+    "declaration-no-important": true,
+    "no-duplicate-selectors": true,
+    "no-descending-specificity": null,
+    "selector-no-qualifying-type": null,
+    "color-no-hex": null,
+    "font-family-name-quotes": "always-unless-keyword",
+    "font-weight-notation": "numeric",
+    "selector-type-case": null,
+    "value-keyword-case": [
+      "lower",
+      {
+        "camelCaseSvgKeywords": true
+      }
+    ],
+    "declaration-empty-line-before": null,
+    "length-zero-no-unit": true,
+    "shorthand-property-no-redundant-values": true,
+    "number-max-precision": 4,
+    "rule-empty-line-before": [
+      "always",
+      {
+        "except": [
+          "first-nested"
+        ],
+        "ignore": [
+          "after-comment"
+        ]
+      }
+    ],
+    "scss/dollar-variable-default": [
+      true,
+      {
+        "ignore": "local"
+      }
+    ],
+    "scss/at-rule-no-unknown": null,
+    "scss/selector-no-redundant-nesting-selector": true,
+    "scss/no-duplicate-dollar-variables": [
+      true,
+      {
+        "ignoreInside": [
+          "at-rule",
+          "nested-rule"
+        ]
+      }
+    ]
+  }
+}
