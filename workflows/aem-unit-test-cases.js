@@ -1,10 +1,10 @@
 export const meta = {
   name: 'aem-unit-test-cases',
-  description: 'Orchestrates AEM unit test case creation with local build validation and permission gates',
+  description: 'Orchestrates AEM unit test case creation with optional trusted mode for power users',
   phases: [
     { title: 'Input Validation', detail: 'Validate test case inputs and enforce repo location' },
-    { title: 'Repository Setup', detail: 'Clone/fetch repos with permission gate' },
-    { title: 'Test Generation', detail: 'Generate unit tests with permission gate' },
+    { title: 'Repository Setup', detail: 'Clone/fetch repos (with optional permission gate)' },
+    { title: 'Test Generation', detail: 'Generate unit tests (with optional permission gate)' },
     { title: 'Local Build Validation', detail: 'Build projects locally to verify tests' },
     { title: 'Push to Branch', detail: 'Auto-push without permission when build passes' },
   ],
@@ -14,6 +14,7 @@ export const meta = {
 phase('Input Validation')
 
 const testCases = args?.testCases || []
+const trustedMode = args?.trustedMode === true
 // ENFORCE strict location: project-unit-test cases/repo
 const baseDir = `${process.cwd()}/project-unit-test cases/repo`
 
@@ -25,10 +26,43 @@ log(`Processing ${testCases.length} repository(ies)`)
 log(`All repos cloned to: ${baseDir}`)
 log(`Token optimization: Reduced prompt verbosity and enabled caching`)
 
+if (trustedMode) {
+  log(`🔓 TRUSTED MODE ENABLED - Skipping all permission gates`)
+} else {
+  log(`🔒 SAFE MODE - Permission gates required before each major operation`)
+}
+
+// Helper function to conditionally request permission based on mode
+const requestPermission = async (operationName, operationDetails, repoName) => {
+  if (trustedMode) {
+    log(`  → Auto-approved: ${operationName} for ${repoName}`)
+    return { approved: true, trusted: true }
+  }
+
+  return await agent(
+    `Ask user to confirm ${operationName}:
+${operationDetails}
+
+Confirm before proceeding.`,
+    {
+      label: `perm:${operationName}:${repoName}`,
+      phase: `${operationName} (Permission)`,
+      schema: {
+        type: 'object',
+        properties: {
+          approved: { type: 'boolean' },
+          reason: { type: 'string' },
+        },
+        required: ['approved'],
+      },
+    },
+  )
+}
+
 const results = await pipeline(
   testCases,
 
-  // Stage 1: Repository Setup (with permission gate)
+  // Stage 1: Repository Setup (with optional permission gate)
   async (testCase) => {
     phase('Repository Setup')
 
@@ -36,28 +70,14 @@ const results = await pipeline(
     const repoName = repoUrl.split('/').pop().replace(/\.git$/, '')
     const repoPath = `${baseDir}/${repoName}`
 
-    // REQUEST PERMISSION before setup
-    log(`Requesting permission to clone/setup: ${repoName}`)
-    const setupPermission = await agent(
-      `Request user permission to setup repository:
-Repo: ${repoName}
+    // REQUEST PERMISSION before setup (unless trusted mode)
+    const setupPermission = await requestPermission(
+      'setup',
+      `Repo: ${repoName}
 URL: ${repoUrl}
 Location: ${repoPath}
-Branch: ${productionBranch}
-
-IMPORTANT: Ask user to confirm before proceeding with any operations.`,
-      {
-        label: `perm:setup:${repoName}`,
-        phase: 'Repository Setup',
-        schema: {
-          type: 'object',
-          properties: {
-            approved: { type: 'boolean' },
-            reason: { type: 'string' },
-          },
-          required: ['approved'],
-        },
-      },
+Branch: ${productionBranch}`,
+      repoName,
     )
 
     if (!setupPermission?.approved) {
@@ -66,7 +86,7 @@ IMPORTANT: Ask user to confirm before proceeding with any operations.`,
         repoName,
         repoPath,
         status: 'skipped',
-        reason: 'User did not approve repository setup',
+        reason: trustedMode ? 'Denied in trusted mode' : 'User did not approve repository setup',
       }
     }
 
@@ -124,34 +144,20 @@ Return: {repoPath, featureBranch: 'feature/ai-unit-test-cases', ready: true/fals
     const { repoPath, repoName, repoUrl } = repoSetup
     const testCaseData = testCases.find(tc => tc.repoUrl === repoUrl)
 
-    // REQUEST PERMISSION before test generation
-    log(`Requesting permission to generate tests for: ${repoName}`)
-    const genPermission = await agent(
-      `Ask user to confirm test generation:
-Repo: ${repoName}
+    // REQUEST PERMISSION before test generation (unless trusted mode)
+    const genPermission = await requestPermission(
+      'generation',
+      `Repo: ${repoName}
 Target: ${testCaseData?.testCases || 'all high-priority classes'}
-Location: ${repoPath}
-
-Confirm before proceeding with code generation.`,
-      {
-        label: `perm:gen:${repoName}`,
-        phase: 'Test Generation',
-        schema: {
-          type: 'object',
-          properties: {
-            approved: { type: 'boolean' },
-            reason: { type: 'string' },
-          },
-          required: ['approved'],
-        },
-      },
+Location: ${repoPath}`,
+      repoName,
     )
 
     if (!genPermission?.approved) {
       return {
         ...repoSetup,
         status: 'skipped',
-        reason: 'User did not approve test generation',
+        reason: trustedMode ? 'Denied in trusted mode' : 'User did not approve test generation',
       }
     }
 
@@ -210,36 +216,20 @@ Work in ${repoPath} only.`,
       }
     }
 
-    // REQUEST PERMISSION before build validation
-    log(`Requesting permission to validate build locally for: ${testGenResult.repoName}`)
-    const validatePermission = await agent(
-      `Ask user to confirm local build validation:
-Repo: ${testGenResult.repoName}
+    // REQUEST PERMISSION before build validation (unless trusted mode)
+    const validatePermission = await requestPermission(
+      'validation',
+      `Repo: ${testGenResult.repoName}
 Location: ${testGenResult.repoPath}
-
-Run: mvn clean test -pl core -am
-This catches issues before pushing.
-
-Confirm to proceed.`,
-      {
-        label: `perm:validate:${testGenResult.repoName}`,
-        phase: 'Local Build Validation',
-        schema: {
-          type: 'object',
-          properties: {
-            approved: { type: 'boolean' },
-            reason: { type: 'string' },
-          },
-          required: ['approved'],
-        },
-      },
+Command: mvn clean test -pl core -am`,
+      testGenResult.repoName,
     )
 
     if (!validatePermission?.approved) {
       return {
         ...testGenResult,
         buildValidated: false,
-        reason: 'User did not approve build validation',
+        reason: trustedMode ? 'Denied in trusted mode' : 'User did not approve build validation',
       }
     }
 
@@ -340,10 +330,11 @@ const successCount = results.filter((r) => r?.featureBranchPushed === true)?.len
 const failedCount = results.filter((r) => r?.status === 'failed')?.length || 0
 const skippedCount = results.filter((r) => r?.status === 'skipped')?.length || 0
 
+const modeLabel = trustedMode ? '🔓 TRUSTED MODE' : '🔒 SAFE MODE'
 log(`\nCompleted: ${successCount} pushed, ${failedCount} failed, ${skippedCount} skipped out of ${testCases.length} total`)
-log(`\nOptimizations Applied:`)
+log(`\n${modeLabel} - Execution Summary:`)
 log(`  - Token usage reduced: Concise prompts + structured schemas`)
-log(`  - Permission gates: Requested before setup, generation, validation`)
+log(`  - Permission gates: ${trustedMode ? 'SKIPPED (trusted mode)' : 'Requested before setup, generation, validation'}`)
 log(`  - Auto-push: No permission needed after build validation passes`)
 log(`  - Strict location: All repos cloned to ${baseDir}`)
 log(`\nRepository locations:`)
@@ -360,9 +351,10 @@ return {
   failed: failedCount,
   skipped: skippedCount,
   baseDirectory: baseDir,
+  mode: trustedMode ? 'trusted' : 'safe',
   optimizations: {
     tokenReduction: 'Concise structured prompts with schemas',
-    permissionGates: 'Before setup, generation, validation (auto-push only)',
+    permissionGates: trustedMode ? 'DISABLED (trusted mode)' : 'Before setup, generation, validation',
     strictLocation: `Enforced ${baseDir}`,
     buildValidation: 'Local Maven build before push',
   },

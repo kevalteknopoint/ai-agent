@@ -80,6 +80,42 @@ The workflow will ask for permission at 3 stages:
 }'
 ```
 
+## Example 3: Trusted Mode (Power Users Only)
+
+Skip all permission gates for faster execution:
+
+```bash
+/aem-unit-test-cases --args '{
+  "trustedMode": true,
+  "testCases": [
+    {
+      "repoUrl": "https://github.com/company/aem-core.git",
+      "productionBranch": "main",
+      "testCases": "ServiceImpl, UtilsClass"
+    },
+    {
+      "repoUrl": "https://github.com/company/aem-models.git",
+      "productionBranch": "develop",
+      "testCases": "all high-priority"
+    }
+  ]
+}'
+```
+
+**Trusted Mode Features:**
+- 🔓 Skips all permission gates
+- ⚡ Faster execution (1-2 min vs 2-5 min)
+- ✅ Build validation still runs
+- ⚠️ Opt-in only, disabled by default
+
+**When to Use:**
+- CI/CD pipelines
+- Batch testing operations
+- Power users who reviewed the workflow
+- Trusted environments
+
+👉 **See [TRUSTED-MODE-GUIDE.md](docs/TRUSTED-MODE-GUIDE.md) for detailed documentation**
+
 ## What Happens During Execution
 
 ### Stage 1: Repository Setup

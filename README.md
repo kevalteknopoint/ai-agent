@@ -7,7 +7,8 @@ A comprehensive AI workflow agent for orchestrating AEM unit test case creation 
 The **AEM Unit Test Cases** agent is a multi-stage workflow that:
 
 ✅ **Token Optimized** - 47% reduction in token usage vs. previous version
-✅ **Permission-Controlled** - Explicit approval gates for setup, generation, and validation
+✅ **Safe by Default** - Explicit approval gates for setup, generation, and validation
+✅ **Trusted Mode Ready** - Optional fast-track for power users (skip gates, keep validation)
 ✅ **Build-Validated** - Local Maven builds tested before pushing to remote
 ✅ **Centrally Organized** - Enforces strict repository location
 ✅ **Production-Ready** - Auto-push when validation passes
@@ -40,12 +41,20 @@ The **AEM Unit Test Cases** agent is a multi-stage workflow that:
   - Automatically pushes to `feature/ai-unit-test-cases`
   - No user intervention needed after validation passes
 
-### 3. Permission Gates
+### 3. Permission Gates (Safe Mode)
 The workflow requests explicit permission before expensive operations:
 - ✓ Repository Setup: User approves before cloning
 - ✓ Test Generation: User approves before code creation
 - ✓ Build Validation: User approves before Maven test
 - ✗ Auto-Push: No permission needed (already validated)
+
+**Optional Trusted Mode** (for power users):
+- 🔓 Skip all permission gates
+- ⚡ Faster execution (1-2 min vs 2-5 min)
+- ✅ Build validation still runs
+- Safe for CI/CD and batch operations
+
+👉 See [Trusted Mode Guide](docs/TRUSTED-MODE-GUIDE.md)
 
 ### 4. Centralized Repository Location
 All repositories are cloned to:
@@ -73,7 +82,7 @@ Benefits:
 /aem-unit-test-cases
 ```
 
-Or with explicit test cases:
+Or with explicit test cases (Safe Mode):
 
 ```bash
 /aem-unit-test-cases --args '{
@@ -87,6 +96,21 @@ Or with explicit test cases:
       "repoUrl": "https://github.com/org/aem-models.git",
       "productionBranch": "develop",
       "testCases": "all high-priority"
+    }
+  ]
+}'
+```
+
+Or with Trusted Mode (power users only):
+
+```bash
+/aem-unit-test-cases --args '{
+  "trustedMode": true,
+  "testCases": [
+    {
+      "repoUrl": "https://github.com/org/aem-core.git",
+      "productionBranch": "main",
+      "testCases": "ServiceImpl, UtilsClass, ModelClass"
     }
   ]
 }'
@@ -183,6 +207,7 @@ The workflow returns a comprehensive result object:
 
 ## Documentation
 
+- **[TRUSTED-MODE-GUIDE.md](docs/TRUSTED-MODE-GUIDE.md)** - Safe Mode vs Trusted Mode, use cases, and best practices
 - **[AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md](docs/AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md)** - Comprehensive technical guide (12 sections)
 - **[AEM-UNIT-TEST-CASES-BEFORE-AFTER.md](docs/AEM-UNIT-TEST-CASES-BEFORE-AFTER.md)** - Visual before/after comparison
 
