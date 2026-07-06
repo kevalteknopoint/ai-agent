@@ -21,7 +21,7 @@
     "stylelint": "^16.6.1",
     "stylelint-config-standard": "^36.0.1",
     "stylelint-config-standard-scss": "^13.1.0",
-    "html-eslint": "^19.9.0",
+    "postcss-scss": "^4.0.9",
     "htmlhint": "^1.9.2"
   },
   "keywords": [
