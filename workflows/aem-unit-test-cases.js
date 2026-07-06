@@ -15,15 +15,17 @@ phase('Input Validation')
 
 const testCases = args?.testCases || []
 const trustedMode = args?.trustedMode === true
-// ENFORCE strict location: project-unit-test cases/repo
-const baseDir = `${process.cwd()}/project-unit-test cases/repo`
+// ENFORCE strict location: project-unit-test cases/repos
+// Note: process.cwd() doesn't work in workflow sandbox, use hardcoded path or override via args.baseDir
+const baseDir = args?.baseDir || '/Users/kevaljoshi/Documents/project-source/project-unit-test cases/repos'
 
 if (!Array.isArray(testCases) || testCases.length === 0) {
   throw new Error('No test cases provided. Pass: [{repoUrl, productionBranch, testCases}, ...]')
 }
 
 log(`Processing ${testCases.length} repository(ies)`)
-log(`All repos cloned to: ${baseDir}`)
+log(`Repository location: ${baseDir}`)
+log(`Override with: args.baseDir = '/your/custom/path'`)
 log(`Token optimization: Reduced prompt verbosity and enabled caching`)
 
 if (trustedMode) {

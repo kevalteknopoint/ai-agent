@@ -30,6 +30,15 @@ Create a file with your repository information:
 }
 ```
 
+**Optional Parameters:**
+```json
+{
+  "baseDir": "/custom/repo/location",
+  "trustedMode": false,
+  "testCases": [...]
+}
+```
+
 ### 4. Run the Workflow
 ```bash
 /aem-unit-test-cases --args '{"testCases": [...]}'

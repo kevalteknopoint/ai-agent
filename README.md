@@ -59,7 +59,15 @@ The workflow requests explicit permission before expensive operations:
 ### 4. Centralized Repository Location
 All repositories are cloned to:
 ```
-${project-root}/project-unit-test cases/repo
+/Users/kevaljoshi/Documents/project-source/project-unit-test cases/repos
+```
+
+**Override Location:**
+```bash
+/aem-unit-test-cases --args '{
+  "baseDir": "/your/custom/path",
+  "testCases": [...]
+}'
 ```
 
 Benefits:
@@ -67,6 +75,7 @@ Benefits:
 - Easy cleanup and management
 - No scattered clones across filesystem
 - Consistent across CI/CD pipelines
+- Customizable via baseDir parameter
 
 ## Usage
 
