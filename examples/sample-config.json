@@ -1,0 +1,83 @@
+{
+  "comment": "Sample configuration for AEM Unit Test Cases agent",
+
+  "example_1_single_repo": {
+    "description": "Test a single AEM backend repository",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/aem-core.git",
+        "productionBranch": "main",
+        "testCases": "UserService, AuthUtil, DataProcessor"
+      }
+    ]
+  },
+
+  "example_2_multiple_repos": {
+    "description": "Test multiple AEM repositories in parallel",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/aem-core.git",
+        "productionBranch": "main",
+        "testCases": "ServiceImpl, UtilsClass"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/aem-models.git",
+        "productionBranch": "develop",
+        "testCases": "ModelClass, EntityClass"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/aem-api.git",
+        "productionBranch": "main",
+        "testCases": "RestController, RequestHandler"
+      }
+    ]
+  },
+
+  "example_3_high_priority_classes": {
+    "description": "Generate tests for all high-priority classes",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/aem-backend.git",
+        "productionBranch": "develop",
+        "testCases": "all high-priority"
+      }
+    ]
+  },
+
+  "example_4_specific_classes": {
+    "description": "Generate tests for specific classes only",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/aem-services.git",
+        "productionBranch": "main",
+        "testCases": "PaymentService, RefundService, NotificationService"
+      }
+    ]
+  },
+
+  "example_5_batch_operations": {
+    "description": "Batch operations across multiple teams/modules",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/auth-module.git",
+        "productionBranch": "main",
+        "testCases": "all high-priority"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/payment-module.git",
+        "productionBranch": "develop",
+        "testCases": "PaymentProcessor, RefundHandler, SettlementService"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/reporting-module.git",
+        "productionBranch": "main",
+        "testCases": "ReportGenerator, DataExporter"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/notification-module.git",
+        "productionBranch": "develop",
+        "testCases": "EmailService, SMSService"
+      }
+    ]
+  }
+}

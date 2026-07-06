@@ -1,0 +1,40 @@
+# Local project artifacts
+project-unit-test\ cases/
+repos/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Logs
+logs/
+*.log
+
+# Build artifacts
+target/
+build/
+dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE specific
+*.iml
+
+# Package manager
+package-lock.json
+yarn.lock
