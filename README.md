@@ -1,6 +1,20 @@
-# AEM Unit Test Cases Agent
+# Unit Test Cases Workflow Agents
 
-A comprehensive AI workflow agent for orchestrating AEM unit test case creation across multiple repositories with advanced optimization, permission gates, and local build validation.
+Comprehensive AI workflow agents for orchestrating unit test case creation across multiple repositories with advanced optimization, permission gates, and local build validation.
+
+## Available Agents
+
+🏗️ **AEM Unit Test Cases** (`aem-unit-test-cases`)
+- For Adobe AEM Sites backend projects
+- AEM-specific testing patterns
+- JUnit, Mockito, AEM Mocks
+
+🚀 **Spring Boot Unit Test Cases** (`spring-boot-unit-test-cases`)
+- For Spring Boot applications
+- Spring Boot testing patterns  
+- JUnit, Mockito, Spring Test
+
+Both agents share identical architecture with technology-specific optimizations.
 
 ## Overview
 
@@ -214,11 +228,27 @@ The workflow returns a comprehensive result object:
 - **⊘ SKIPPED** - User denied permission at some gate
 - **✗ FAILED** - Error during setup, generation, or validation
 
+## Choosing Your Agent
+
+### AEM Projects? Use `aem-unit-test-cases`
+```bash
+/aem-unit-test-cases --args '{"testCases": [...]}'
+```
+
+### Spring Boot Projects? Use `spring-boot-unit-test-cases`
+```bash
+/spring-boot-unit-test-cases --args '{"testCases": [...]}'
+```
+
+👉 See [WORKFLOWS-COMPARISON.md](docs/WORKFLOWS-COMPARISON.md) for detailed comparison
+
 ## Documentation
 
+- **[WORKFLOWS-COMPARISON.md](docs/WORKFLOWS-COMPARISON.md)** - Compare AEM vs Spring Boot agents
 - **[TRUSTED-MODE-GUIDE.md](docs/TRUSTED-MODE-GUIDE.md)** - Safe Mode vs Trusted Mode, use cases, and best practices
-- **[AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md](docs/AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md)** - Comprehensive technical guide (12 sections)
-- **[AEM-UNIT-TEST-CASES-BEFORE-AFTER.md](docs/AEM-UNIT-TEST-CASES-BEFORE-AFTER.md)** - Visual before/after comparison
+- **[SPRING-BOOT-WORKFLOW-GUIDE.md](docs/SPRING-BOOT-WORKFLOW-GUIDE.md)** - Spring Boot agent guide
+- **[AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md](docs/AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md)** - AEM agent technical guide
+- **[AEM-UNIT-TEST-CASES-BEFORE-AFTER.md](docs/AEM-UNIT-TEST-CASES-BEFORE-AFTER.md)** - AEM before/after comparison
 
 ## File Structure
 

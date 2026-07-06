@@ -1,0 +1,162 @@
+{
+  "comment": "Sample configurations for Spring Boot Unit Test Cases workflow",
+
+  "example_1_single_service": {
+    "description": "Test a single Spring Boot service",
+    "workflow": "spring-boot-unit-test-cases",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/user-service.git",
+        "productionBranch": "main",
+        "testCases": "UserService, UserRepository"
+      }
+    ]
+  },
+
+  "example_2_multiple_services": {
+    "description": "Test multiple Spring Boot microservices",
+    "workflow": "spring-boot-unit-test-cases",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/user-service.git",
+        "productionBranch": "main",
+        "testCases": "UserService, UserController, UserRepository"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/order-service.git",
+        "productionBranch": "develop",
+        "testCases": "OrderService, OrderController, OrderRepository"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/payment-service.git",
+        "productionBranch": "main",
+        "testCases": "PaymentProcessor, PaymentGateway, TransactionService"
+      }
+    ]
+  },
+
+  "example_3_high_priority_classes": {
+    "description": "Generate tests for all high-priority classes",
+    "workflow": "spring-boot-unit-test-cases",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/api-service.git",
+        "productionBranch": "main",
+        "testCases": "all high-priority"
+      }
+    ]
+  },
+
+  "example_4_specific_controllers": {
+    "description": "Test REST controllers only",
+    "workflow": "spring-boot-unit-test-cases",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/api-service.git",
+        "productionBranch": "main",
+        "testCases": "UserController, ProductController, OrderController"
+      }
+    ]
+  },
+
+  "example_5_trusted_mode": {
+    "description": "Batch testing with Trusted Mode (power users only)",
+    "workflow": "spring-boot-unit-test-cases",
+    "trustedMode": true,
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/user-service.git",
+        "productionBranch": "main",
+        "testCases": "all high-priority"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/order-service.git",
+        "productionBranch": "main",
+        "testCases": "all high-priority"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/payment-service.git",
+        "productionBranch": "main",
+        "testCases": "all high-priority"
+      }
+    ]
+  },
+
+  "example_6_custom_location": {
+    "description": "Use custom repository location",
+    "workflow": "spring-boot-unit-test-cases",
+    "baseDir": "/ci-test-repos/spring-boot",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/app.git",
+        "productionBranch": "main",
+        "testCases": "UserService, ProductService"
+      }
+    ]
+  },
+
+  "example_7_ci_cd_pipeline": {
+    "description": "Automated testing for CI/CD pipeline",
+    "workflow": "spring-boot-unit-test-cases",
+    "trustedMode": true,
+    "baseDir": "/var/ci/test-repos",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/api-gateway.git",
+        "productionBranch": "main",
+        "testCases": "all high-priority"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/auth-service.git",
+        "productionBranch": "main",
+        "testCases": "all high-priority"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/notification-service.git",
+        "productionBranch": "main",
+        "testCases": "all high-priority"
+      },
+      {
+        "repoUrl": "https://github.com/your-org/document-service.git",
+        "productionBranch": "develop",
+        "testCases": "all high-priority"
+      }
+    ]
+  },
+
+  "example_8_entity_and_repository_testing": {
+    "description": "Focus on data access layer testing",
+    "workflow": "spring-boot-unit-test-cases",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/data-service.git",
+        "productionBranch": "main",
+        "testCases": "UserRepository, ProductRepository, OrderRepository, TransactionRepository"
+      }
+    ]
+  },
+
+  "example_9_integration_testing": {
+    "description": "Generate integration tests for controllers",
+    "workflow": "spring-boot-unit-test-cases",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/rest-api.git",
+        "productionBranch": "main",
+        "testCases": "UserController, ProductController, CartController, CheckoutController"
+      }
+    ]
+  },
+
+  "example_10_utility_and_helper_testing": {
+    "description": "Test utility classes and helpers",
+    "workflow": "spring-boot-unit-test-cases",
+    "testCases": [
+      {
+        "repoUrl": "https://github.com/your-org/shared-utils.git",
+        "productionBranch": "main",
+        "testCases": "DateUtil, StringUtil, ValidationUtil, CryptoUtil, JsonUtil"
+      }
+    ]
+  }
+}

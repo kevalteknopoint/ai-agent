@@ -1,6 +1,39 @@
 # Changelog
 
-All notable changes to the AEM Unit Test Cases workflow agent are documented in this file.
+All notable changes to the Unit Test Cases workflow agents are documented in this file.
+
+## [1.2.0] - 2026-07-06
+
+### Added
+- **Spring Boot Unit Test Cases Agent** (`spring-boot-unit-test-cases`)
+  - Full Spring Boot test generation with JUnit, Mockito, Spring Test
+  - Same architecture as AEM agent for consistency
+  - Safe Mode (default) with 3 permission gates
+  - Trusted Mode (opt-in) for automation
+  - Local Maven build validation
+  - Token optimization (47% reduction)
+
+- **New Documentation**
+  - SPRING-BOOT-WORKFLOW-GUIDE.md: Comprehensive Spring Boot guide
+  - WORKFLOWS-COMPARISON.md: Detailed comparison between agents
+  - spring-boot-examples.json: 10 example configurations
+
+- **Examples**
+  - Single service testing
+  - Multiple microservices (parallel)
+  - Batch testing with Trusted Mode
+  - CI/CD pipeline integration
+  - Custom repository locations
+
+### Changed
+- Updated README.md to highlight both available agents
+- Enhanced documentation structure for multiple agents
+
+### Benefits
+- Choose appropriate agent for your technology stack
+- Reuse proven architecture across different frameworks
+- Unified token optimization and permission gates
+- Consistent testing workflows
 
 ## [1.1.0] - 2026-07-06
 
