@@ -31,14 +31,13 @@ echo "Target:  $TARGET_REPO"
 echo "Output:  $OUTPUT_DIR"
 echo ""
 
-# Track results
-declare -A results
-results[java_pmd]=0
-results[java_checkstyle]=0
-results[htl]=0
-results[eslint]=0
-results[stylelint]=0
-results[custom]=0
+# Track results (using simple variables instead of associative arrays for sh compatibility)
+results_java_pmd=0
+results_java_checkstyle=0
+results_htl=0
+results_eslint=0
+results_stylelint=0
+results_custom=0
 
 ################################################################################
 # 1. PMD - AEM/Sling Anti-Patterns
@@ -58,7 +57,7 @@ if [ -f "$TARGET_REPO/core/pom.xml" ]; then
     # Look for PMD report
     if [ -f "$TARGET_REPO/core/target/pmd.json" ]; then
       cp "$TARGET_REPO/core/target/pmd.json" "$OUTPUT_DIR/pmd-report.json"
-      results[java_pmd]=1
+      results_java_pmd=1
       echo -e "${GREEN}✓ PMD scan completed${NC}"
     else
       echo -e "${YELLOW}⚠ PMD report not generated${NC}"
@@ -83,7 +82,7 @@ if [ -f "$TARGET_REPO/core/pom.xml" ]; then
 
     if [ -f "$TARGET_REPO/core/target/checkstyle-result.xml" ]; then
       cp "$TARGET_REPO/core/target/checkstyle-result.xml" "$OUTPUT_DIR/checkstyle-report.xml"
-      results[java_checkstyle]=1
+      results_java_checkstyle=1
       echo -e "${GREEN}✓ Checkstyle scan completed${NC}"
     else
       echo -e "${YELLOW}⚠ Checkstyle report not generated${NC}"
@@ -104,7 +103,7 @@ if [ -f "$TARGET_REPO/ui.apps/pom.xml" ]; then
   if mvn org.apache.sling:htl-maven-plugin:3.2.0:validate \
       -f "$TARGET_REPO/ui.apps/pom.xml" \
       -q 2>&1 | tee "$OUTPUT_DIR/htl-report.log" || true; then
-    results[htl]=1
+    results_htl=1
     echo -e "${GREEN}✓ HTL validation completed${NC}"
   else
     echo -e "${YELLOW}⚠ HTL validation failed or issues found${NC}"
@@ -125,7 +124,7 @@ if [ -d "$TARGET_REPO/ui.frontend/src" ]; then
         --format json \
         "$TARGET_REPO/ui.frontend/src" \
         > "$OUTPUT_DIR/eslint-report.json" 2>&1 || true; then
-      results[eslint]=1
+      results_eslint=1
       echo -e "${GREEN}✓ ESLint scan completed${NC}"
     else
       echo -e "${YELLOW}⚠ ESLint execution failed${NC}"
@@ -149,7 +148,7 @@ if [ -d "$TARGET_REPO/ui.frontend/src" ]; then
         --formatter json \
         "$TARGET_REPO/ui.frontend/src/**/*.{less,scss,css}" \
         > "$OUTPUT_DIR/stylelint-report.json" 2>&1 || true; then
-      results[stylelint]=1
+      results_stylelint=1
       echo -e "${GREEN}✓ Stylelint scan completed${NC}"
     else
       echo -e "${YELLOW}⚠ Stylelint execution failed${NC}"
@@ -170,7 +169,7 @@ if [ -d "$TARGET_REPO/ui.apps" ]; then
   if node "$TOOLKIT_ROOT/rules/custom/clientlib-conventions.js" \
       "$TARGET_REPO/ui.apps" \
       > "$OUTPUT_DIR/clientlib-report.json" 2>&1; then
-    results[custom]=1
+    results_custom=1
     echo -e "${GREEN}✓ Clientlib conventions check completed${NC}"
   else
     echo -e "${YELLOW}⚠ Clientlib check failed${NC}"
@@ -184,12 +183,12 @@ fi
 ################################################################################
 echo ""
 echo -e "${BLUE}=== Summary ===${NC}"
-echo "Java/PMD:      $([ ${results[java_pmd]} -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
-echo "Java/Checkstyle: $([ ${results[java_checkstyle]} -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
-echo "HTL:           $([ ${results[htl]} -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
-echo "ESLint:        $([ ${results[eslint]} -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
-echo "Stylelint:     $([ ${results[stylelint]} -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
-echo "Clientlibs:    $([ ${results[custom]} -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
+echo "Java/PMD:      $([ $results_java_pmd -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
+echo "Java/Checkstyle: $([ $results_java_checkstyle -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
+echo "HTL:           $([ $results_htl -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
+echo "ESLint:        $([ $results_eslint -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
+echo "Stylelint:     $([ $results_stylelint -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
+echo "Clientlibs:    $([ $results_custom -eq 1 ] && echo -e "${GREEN}✓${NC}" || echo -e "${YELLOW}⊘${NC}")"
 echo ""
 echo "Raw reports written to: $OUTPUT_DIR"
 echo ""
