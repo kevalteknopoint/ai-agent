@@ -46,7 +46,8 @@ results[custom]=0
 echo -e "${BLUE}[1/6] PMD - AEM/Sling Anti-Patterns${NC}"
 
 if [ -f "$TARGET_REPO/core/pom.xml" ]; then
-  RULESETS="$TOOLKIT_ROOT/rules/java/pmd-ruleset-aem-sling.xml,$TOOLKIT_ROOT/rules/java/pmd-ruleset-java-general.xml"
+  # Include all three PMD rulesets: custom AEM/Sling, general Java, and Adobe official Cloud Manager rules
+  RULESETS="$TOOLKIT_ROOT/rules/java/pmd-ruleset-aem-sling.xml,$TOOLKIT_ROOT/rules/java/pmd-ruleset-java-general.xml,$TOOLKIT_ROOT/rules/java/pmd-ruleset-adobe-official.xml"
 
   if mvn org.apache.maven.plugins:maven-pmd-plugin:3.21.2:pmd \
       -Dpmd.rulesets="$RULESETS" \

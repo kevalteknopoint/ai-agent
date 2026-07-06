@@ -1,9 +1,15 @@
 {
   "manifest": {
-    "version": "1.0.0",
-    "description": "Master catalog of all quality rules for AEMaaCS projects",
+    "version": "1.1.0",
+    "description": "Master catalog of all quality rules for AEMaaCS projects (includes Adobe's official Cloud Manager rules)",
     "lastUpdated": "2026-07-06",
-    "dimensions": ["Java", "Sling/AEM", "HTL", "JavaScript", "CSS", "HTML"]
+    "dimensions": ["Java", "Sling/AEM", "HTL", "JavaScript", "CSS", "HTML"],
+    "sources": [
+      "Adobe Experience League: Cloud Manager Custom Code Quality Rules",
+      "PMD (SonarQube-based custom rules)",
+      "Checkstyle and ESLint/Stylelint standards",
+      "AEM Engineering Best Practices"
+    ]
   },
   "rules": [
     {
@@ -343,6 +349,211 @@
       "rationale": "Use 'embed' for same-project dependencies, 'dependencies' for external ones",
       "enabled": true,
       "sourceFile": "rules/custom/clientlib-conventions.js"
+    },
+
+    {
+      "id": "adobe-cwe-676",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "security",
+      "severity": "major",
+      "rationale": "[Adobe] Avoid Thread.stop() and Thread.interrupt() — unsafe thread termination",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQRules:CWE-676",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-cwe-134",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "security",
+      "severity": "major",
+      "rationale": "[Adobe] Prevent format string injection from external sources (CWE-134)",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQRules:CWE-134",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-connection-timeout-mechanism",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "security",
+      "severity": "blocker",
+      "rationale": "[Adobe CRITICAL] HTTP clients must have socket/connect timeouts (≤60s recommended) to prevent resource exhaustion",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQRules:ConnectionTimeoutMechanism",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-cqbp-72",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "security",
+      "severity": "blocker",
+      "rationale": "[Adobe CQBP-72] Always close ResourceResolver objects to prevent leaks",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQBP-72",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-cqbp-75",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "design",
+      "severity": "major",
+      "rationale": "[Adobe CQBP-75] Use resource type binding for servlet registration instead of Sling servlet paths",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQBP-75",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-cqbp-71",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "design",
+      "severity": "major",
+      "rationale": "[Adobe CQBP-71] Avoid hardcoded /libs and /apps paths; use relative paths for portability",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQBP-71",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-cqbp-44-catch-log-throw",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "bestpractices",
+      "severity": "minor",
+      "rationale": "[Adobe CQBP-44] Log exceptions exactly once (not both log AND throw) to prevent duplication",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQBP-44:CatchAndEitherLogOrThrow",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-cqbp-44-consecutive-log-throw",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "bestpractices",
+      "severity": "minor",
+      "rationale": "[Adobe CQBP-44] Don't log immediately before throw to prevent exception duplication in logs",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQBP-44:ConsecutivelyLogAndThrow",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-cqbp-44-log-level-get-head",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "bestpractices",
+      "severity": "minor",
+      "rationale": "[Adobe CQBP-44] Use WARN/ERROR or DEBUG/TRACE for GET/HEAD requests, not INFO (reduces noise)",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQBP-44:LogInfoInGetOrHeadRequests",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-cqbp-44-exception-message-param",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "bestpractices",
+      "severity": "minor",
+      "rationale": "[Adobe CQBP-44] Don't use Exception.getMessage() as first log parameter; pass exception object instead",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQBP-44:ExceptionGetMessageIsFirstLogParam",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-cqbp-44-catch-block-log-level",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "bestpractices",
+      "severity": "minor",
+      "rationale": "[Adobe CQBP-44] Catch blocks must log at WARN/ERROR level, not DEBUG or INFO",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQBP-44:WrongLogLevelInCatchBlock",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-cqbp-44-no-printstack-trace",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "bestpractices",
+      "severity": "minor",
+      "rationale": "[Adobe CQBP-44] Use SLF4J logging, not printStackTrace()",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQBP-44:ExceptionPrintStackTrace",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-cqbp-44-no-console-output",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "bestpractices",
+      "severity": "minor",
+      "rationale": "[Adobe CQBP-44] Don't use System.out/System.err; use SLF4J logging framework",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "CQBP-44:LogLevelConsolePrinters",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-amscore-554-scheduler",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "design",
+      "severity": "minor",
+      "rationale": "[Adobe AMSCORE-554] Don't use Sling Scheduler; use Sling Scheduled Jobs instead (more cloud-native)",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "AMSCORE-554",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-deprecated-apis",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "design",
+      "severity": "minor",
+      "rationale": "[Adobe] Don't use deprecated AEM APIs (java:S1874 + AMSCORE-553 context-specific deprecations)",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "java:S1874,AMSCORE-553",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-inject-annotation-optional",
+      "engine": "pmd",
+      "dimension": "Sling/AEM",
+      "category": "design",
+      "severity": "minor",
+      "rationale": "[Adobe] Don't use @Inject with @Optional; use @ValueMapValue or @OsgiInjector instead",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "InjectAnnotationWithOptionalInjectionCheck",
+      "source": "Experience League: Custom Code Quality Rules"
+    },
+    {
+      "id": "adobe-reuse-http-client",
+      "engine": "pmd",
+      "dimension": "Java",
+      "category": "performance",
+      "severity": "minor",
+      "rationale": "[Adobe AEMSRE-870] Reuse HTTPClient instances at class level, not created in methods (prevents resource leaks)",
+      "enabled": true,
+      "sourceFile": "rules/java/pmd-ruleset-adobe-official.xml",
+      "adobeRuleId": "AEMSRE-870",
+      "source": "Experience League: Custom Code Quality Rules"
     }
   ],
   "severityLevels": {

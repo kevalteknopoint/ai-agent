@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Adobe-Official-CloudManager-Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+  <description>
+    Adobe's official custom code quality rules from Cloud Manager.
+    Source: https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/implementing/using-cloud-manager/test-results/custom-code-quality-rules
+    These rules are enforced in Cloud Manager pipelines and reflect Adobe's engineering best practices.
+  </description>
+
+  <!-- ========== SECURITY: CWE-Based ========== -->
+  <rule name="CWE-676-AvoidThreadStop" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQRules:CWE-676] Avoid using Thread.stop() or Thread.interrupt() — unsafe thread termination">
+    <priority>2</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodInvocation[MethodName[contains(., 'stop') or contains(., 'interrupt')]]
+          [ancestor::MethodInvocation[MethodName[contains(., 'Thread')]]]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <rule name="CWE-134-FormatStringInjection" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQRules:CWE-134] Prevent format string injection from external sources">
+    <priority>2</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodInvocation[MethodName[contains(., 'format') or contains(., 'printf')]]
+          /Arguments/ArgumentList/Expression[1][self::VariableAccess or self::FieldAccess or self::MethodInvocation]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== SECURITY: CRITICAL — Connection Timeout ========== -->
+  <rule name="ConnectionTimeoutMechanism" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQRules:ConnectionTimeoutMechanism] CRITICAL: HTTP clients must have socket/connect timeouts (≤60s recommended) to prevent resource exhaustion">
+    <priority>1</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodInvocation[MethodName[contains(., 'HttpClient') or contains(., 'URL') or contains(., 'URLConnection')]]
+          [not(ancestor::MethodInvocation[MethodName[contains(., 'setTimeout') or contains(., 'setConnectTimeout') or contains(., 'setReadTimeout')]])]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== AEM/SLING: Resource Management (CQBP-72, CQBP-75, CQBP-71) ========== -->
+  <rule name="CQBP-72-CloseResourceResolver" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQBP-72] Always close ResourceResolver objects via try-with-resources or finally block">
+    <priority>1</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodDeclaration[.//VariableDeclarator[contains(@Image, 'ResourceResolver')]]
+          [not(.//TryStatement[.//ResourceSpecification or .//FinallyBlock])]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <rule name="CQBP-75-ResourceTypeBinding" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQBP-75] Use resource type binding for servlet registration instead of Sling servlet paths (@SlingServletResourceTypes)">
+    <priority>2</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //ClassOrInterfaceDeclaration[.//Annotation[@Image[contains(., 'SlingServletPaths')]]]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <rule name="CQBP-71-HardcodedLibsAppsPaths" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQBP-71] Avoid hardcoded /libs and /apps paths; use relative paths or configuration for portability">
+    <priority>2</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //StringLiteral[contains(@Image, '/libs') or contains(@Image, '/apps')]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== LOGGING: CQBP-44 Rules ========== -->
+  <rule name="CQBP-44-CatchAndEitherLogOrThrow" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQBP-44] Log exceptions exactly once — don't both log AND throw (prevents duplication)">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //CatchClause[.//MethodInvocation[MethodName[contains(., 'log')]] and following-sibling::*[contains(., 'throw')]]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <rule name="CQBP-44-ConsecutivelyLogAndThrow" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQBP-44] Don't log immediately before throw — prevents exception duplication in logs">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //Block[
+            .//MethodInvocation[MethodName[contains(., 'log')]]
+            and following-sibling::ThrowStatement[1]
+          ]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <rule name="CQBP-44-LogInfoInGetOrHeadRequests" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQBP-44] Use WARN/ERROR or DEBUG/TRACE for GET/HEAD requests, not INFO (reduces noise)">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodDeclaration[@Name[contains(., 'doGet') or contains(., 'doHead')]]
+          [.//MethodInvocation[MethodName[contains(., 'info')]] and MethodName[contains(., 'log')]]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <rule name="CQBP-44-ExceptionGetMessageAsFirstLogParam" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQBP-44] Don't use Exception.getMessage() as first log parameter; pass exception object instead">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodInvocation[MethodName[contains(., 'log')]]
+          /Arguments/ArgumentList/Expression[1][.//MethodInvocation[MethodName[contains(., 'getMessage')]]]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <rule name="CQBP-44-WrongLogLevelInCatchBlock" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQBP-44] Catch blocks must log at WARN/ERROR level, not DEBUG or INFO">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //CatchClause[.//MethodInvocation[MethodName[contains(., 'debug') or contains(., 'info')]]]
+          [not(.//MethodInvocation[MethodName[contains(., 'warn') or contains(., 'error')]])]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <rule name="CQBP-44-ExceptionPrintStackTrace" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQBP-44] Use SLF4J logging (org.slf4j.Logger), not printStackTrace()">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodInvocation[MethodName[contains(., 'printStackTrace')]]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <rule name="CQBP-44-LogLevelConsolePrinters" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe CQBP-44] Don't use System.out/System.err; use SLF4J logging framework instead">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodInvocation[
+            MethodName[contains(., 'println') or contains(., 'print')]
+            and (
+              ancestor::FieldAccess[@Image[contains(., 'System.out') or contains(., 'System.err')]]
+              or FieldAccess[@Image[contains(., 'System.out') or contains(., 'System.err')]]
+            )
+          ]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== CLOUD SERVICE & SCHEDULING ========== -->
+  <rule name="AMSCORE-554-SlingScheduler" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe AMSCORE-554] Don't use Sling Scheduler; use Sling Scheduled Jobs instead (more cloud-native)">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodInvocation[MethodName[contains(., 'addJob') or contains(., 'schedule')]]
+          [ancestor::FieldAccess[@Image[contains(., 'scheduler')]]]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== DEPENDENCY INJECTION ========== -->
+  <rule name="InjectAnnotationWithOptional" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe] Don't use @Inject with @Optional; use @ValueMapValue or @OsgiInjector instead">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //FieldDeclaration[
+            .//Annotation[@Image[contains(., 'Inject')]]
+            and .//Annotation[@Image[contains(., 'Optional')]]
+          ]
+        </value>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- ========== PERFORMANCE ========== -->
+  <rule name="AEMSRE-870-ReuseHTTPClient" language="java" class="net.sourceforge.pmd.lang.rule.XPathRule"
+        message="[Adobe AEMSRE-870] Reuse HTTPClient instances at class level, not created in methods (prevents resource exhaustion)">
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value>
+          //MethodDeclaration[.//VariableDeclarator[contains(@Image, 'HttpClient') or contains(@Image, 'CloseableHttpClient')]]
+        </value>
+      </property>
+    </properties>
+  </rule>
+</ruleset>

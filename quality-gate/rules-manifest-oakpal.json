@@ -1,0 +1,287 @@
+{
+  "manifest": {
+    "version": "1.0.0",
+    "description": "Adobe OakPAL rules for AEM content package validation (35 rules covering indexing, structure, compatibility)",
+    "lastUpdated": "2026-07-06",
+    "tool": "OakPAL",
+    "purpose": "Validate JCR content package structure, Oak indexes, and Cloud Service compatibility",
+    "source": "https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/implementing/using-cloud-manager/test-results/custom-code-quality-rules"
+  },
+  "rules": [
+    {
+      "id": "oakpal-cqbp-84",
+      "tool": "oakpal",
+      "category": "api-contract",
+      "severity": "critical",
+      "rationale": "[Adobe CQBP-84] Don't implement/extend @ProviderType APIs — backward-compatibility risk across versions",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-banned-path-libs",
+      "tool": "oakpal",
+      "category": "jcr-structure",
+      "severity": "critical",
+      "rationale": "[Adobe] Never create/modify nodes under /libs — read-only; upgrade risks",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-tika-node",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "blocker",
+      "rationale": "[Adobe] Custom Lucene indexes must have Tika config node for text extraction",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-async-property",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "blocker",
+      "rationale": "[Adobe] Lucene indexes require 'async: [async]' property for asynchronous indexing",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-dam-asset-lucene",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "blocker",
+      "rationale": "[Adobe] DAM asset indexes must include tags property with 'visualSimilaritySearch'",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-type-lucene",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "blocker",
+      "rationale": "[Adobe] Only Lucene type allowed for custom indexes; legacy types must migrate before Cloud Service",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-no-query-paths-dam",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "blocker",
+      "rationale": "[Adobe] Don't specify queryPaths in damAssetLucene — use includedPaths only",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-compat-version",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] Set compatVersion: 2 for all custom Lucene indexes for forward compatibility",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-descendant-nodetype",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] Index child nodes must be nt:unstructured to allow flexible indexing rules",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-rules-node",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] Lucene index must contain indexRules node with at least 1 child rule",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-seed-property",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] Remove deprecated 'seed' property from index definitions",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-reindex-property",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] Remove deprecated 'reindex' property from index definitions",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-oak-index-location",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] Custom indexes must be direct children of /oak:index (not nested)",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-included-paths-consistency",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] Ensure includedPaths and queryPaths consistency in index definitions",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-duplicate-osgi-configs",
+      "tool": "oakpal",
+      "category": "package-structure",
+      "severity": "major",
+      "rationale": "[Adobe] Don't configure the same OSGi component twice per runmode",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-config-install-osgi-only",
+      "tool": "oakpal",
+      "category": "package-structure",
+      "severity": "major",
+      "rationale": "[Adobe] /config/ and /install/ folders should only contain OSGi configuration nodes",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-package-overlaps",
+      "tool": "oakpal",
+      "category": "package-structure",
+      "severity": "major",
+      "rationale": "[Adobe] Multiple packages shouldn't write to the same JCR node paths",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-immutable-mutable-mixed",
+      "tool": "oakpal",
+      "category": "package-structure",
+      "severity": "minor",
+      "rationale": "[Adobe] Separate /apps and /libs (immutable) from /etc (mutable) into different content packages",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-duplicate-property-names",
+      "tool": "oakpal",
+      "category": "package-structure",
+      "severity": "minor",
+      "rationale": "[Adobe] No duplicate property names in index definitions",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-classic-ui-authoring",
+      "tool": "oakpal",
+      "category": "cloud-service-compatibility",
+      "severity": "minor",
+      "rationale": "[Adobe] Don't default to deprecated Classic UI authoring (v6.4+); provide Touch UI",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-component-classic-ui-only",
+      "tool": "oakpal",
+      "category": "cloud-service-compatibility",
+      "severity": "minor",
+      "rationale": "[Adobe] Provide Touch UI dialogs alongside Classic UI dialogs for all components",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-reverse-replication",
+      "tool": "oakpal",
+      "category": "cloud-service-compatibility",
+      "severity": "minor",
+      "rationale": "[Adobe] Reverse replication agents not supported in Cloud Service",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-workflow-incompatible-process",
+      "tool": "oakpal",
+      "category": "cloud-service-compatibility",
+      "severity": "major",
+      "rationale": "[Adobe] Update legacy workflow processes for asset micro-services (replace DAM Update Asset Workflow)",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-supported-runmode",
+      "tool": "oakpal",
+      "category": "cloud-service-compatibility",
+      "severity": "minor",
+      "rationale": "[Adobe] Follow strict Cloud Service runmode naming policy (author, publish, preview, etc.)",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-static-template-usage",
+      "tool": "oakpal",
+      "category": "component-modernization",
+      "severity": "minor",
+      "rationale": "[Adobe] Use editable templates instead of static templates (better AEM authoring)",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-foundation-component-legacy",
+      "tool": "oakpal",
+      "category": "component-modernization",
+      "severity": "minor",
+      "rationale": "[Adobe] Migrate Foundation Components to Core Components (actively maintained)",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-clientlib-proxy-resource",
+      "tool": "oakpal",
+      "category": "frontend-organization",
+      "severity": "minor",
+      "rationale": "[Adobe] Place static resources in 'resources' child folder for proper proxy handling",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-override-query-limit-reads",
+      "tool": "oakpal",
+      "category": "performance",
+      "severity": "minor",
+      "rationale": "[Adobe] Don't override queryLimitReads in indexes (causes slow reads at scale)",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-path-spaces-check",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] No spaces in indexing definition property names",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-restrict-index-customization",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] Cannot modify system indexes: nodetypeLucene, slingResourceResolver, socialLucene, appsLibsLucene, authorizables, pathReference",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-not-under-ui-content",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] Deploy custom indexes in separate package from UI content (better versioning)",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-dam-asset-custom-indexes",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] Custom asset indexes must be prefixed with 'damAssetLucene' for consistency",
+      "enabled": true
+    },
+    {
+      "id": "oakpal-index-tokenizer-name",
+      "tool": "oakpal",
+      "category": "oak-indexing",
+      "severity": "minor",
+      "rationale": "[Adobe] Analyzer tokenizers must be named 'tokenizer' in Lucene analyzer config",
+      "enabled": true
+    }
+  ],
+  "invocation": {
+    "description": "OakPAL validation is typically run via Maven plugin or Cloud Manager. To validate locally:",
+    "command": "mvn org.apache.sling:sling-maven-plugin:0.0.5:validate-content-package -f <path-to-pom.xml>"
+  },
+  "notes": [
+    "OakPAL rules validate JCR content package structure and Oak index configurations",
+    "These are distinct from Java/backend rules (PMD/Checkstyle) which validate code",
+    "Cloud Manager enforces these rules automatically during cloud builds",
+    "Use locally during development to catch issues before pushing",
+    "Some rules are blockers (must be fixed), others are warnings"
+  ]
+}
