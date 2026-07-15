@@ -72,33 +72,46 @@ workflow above is the thin wrapper that clones a repo and calls this toolkit.
 Nothing here needs a database, a server, or network services beyond git/GitHub and (for
 `vbrd-to-proofhub`) the ProofHub API.
 
-### 2. Wiring it into Claude Code
+### 2. Wiring it into Claude Code — making it invokable from anywhere
 
-Claude Code auto-discovers agents/skills/workflows from a project's `.claude/` directory. This
-repo keeps its source of truth at the **repo root** (`agents/`, `workflows/`, `skills/`) instead,
-so the whole toolkit is easy to browse, diff, and version as one unit. Two ways to use it:
+Claude Code discovers agents/workflows/skills by walking **up** from your current directory
+looking for `.claude/agents`, `.claude/workflows`, `.claude/skills` (merged with whatever's in
+`~/.claude`, which is truly global). This repo keeps its source of truth at the **repo root**
+(`agents/`, `workflows/`, `skills/`) so the toolkit is easy to browse/diff/version as one unit —
+but that root isn't itself on Claude Code's discovery path, so it needs to be installed into a
+`.claude/` directory that *is*.
 
-**Option A — work from inside this repo.** `cd ai-agent && claude`, then invoke workflows/skills
-by name (e.g. `/code-scan`, or ask for the `code-scan` skill in conversation). This is the
-simplest path if you're scanning/testing repos that live alongside this toolkit (e.g. under
-`ai-agent/repos/`, which is git-ignored).
+**Recommended: install into the nearest shared parent directory of your projects.** If you keep
+client/project repos under a common folder (e.g. `~/Documents/project-source/projects/<repo>`),
+put a `.claude/` at that shared parent (`~/Documents/project-source/.claude/`) — every repo
+nested under it then sees the same agents/workflows/skills with zero per-project setup. This is
+exactly how every other custom agent in this environment already works (`aem-test-case-creator`,
+`eds-block-creator`, `spring-boot-test-creator`, … all live in that shared `.claude/`, not inside
+any single project).
 
-**Option B — wire it into another project.** Symlink (or copy) the pieces you need into that
-project's `.claude/` directory:
+Run the installer, which copies the code-scan pieces there (default target shown; pass a
+different path as `$1` to install elsewhere, e.g. `~/.claude` for truly machine-wide):
 
 ```bash
-TOOLKIT=/path/to/ai-agent   # wherever you cloned this repo
-mkdir -p .claude/agents .claude/skills .claude/workflows
-ln -s "$TOOLKIT"/agents/*.md .claude/agents/
-ln -s "$TOOLKIT"/skills/* .claude/skills/
-ln -s "$TOOLKIT"/workflows/*.js .claude/workflows/
+./scripts/install-global.sh
+# or: ./scripts/install-global.sh /path/to/shared/.claude
 ```
 
-Symlinks (not copies) mean `git pull` inside `$TOOLKIT` updates every project you've wired it
-into. The five code-scan analyzer agents also shell out to `$TOOLKIT/scripts/*.sh` and
-`build_issues_csv.py` — those paths are passed explicitly at invocation time (see each agent's
-"Input contract" / the `ai-agent-repo` argument), so Option B works even though the scripts
-themselves aren't symlinked into `.claude/`.
+It copies (not symlinks — matching this environment's existing convention) the 5 analyzer agents,
+the `code-scan-orchestrator` router agent, `workflows/code-scan.js`, and `skills/code-scan/`.
+**Re-run it after editing anything under `agents/`, `workflows/`, or `skills/`** — installed
+copies don't auto-update. A new Claude Code session started from any nested directory then has
+`code-scan` available immediately (existing sessions pick up new skills without a restart in most
+builds; agents/workflows are read at session start, so start a fresh session to see those).
+
+The five analyzer agents shell out to `<ai-agent-repo>/scripts/*.sh` and `build_issues_csv.py` via
+an explicit path passed at invocation time (see each agent's "Input contract" / the
+`ai-agent-repo` argument) — so the installed copies keep working correctly no matter where the
+*scanned* repo lives, as long as this toolkit repo itself stays at a stable path.
+
+If you'd rather work from inside this repo directly instead of installing anywhere: `cd ai-agent
+&& claude`, then invoke by name (`/code-scan`, or ask for the skill in conversation) — no install
+needed, but only works from this directory.
 
 ### 3. Where things get cloned
 
@@ -345,7 +358,8 @@ ai-agent/
 ├── scripts/
 │   ├── clone_or_update.sh                             # Deterministic clone/checkout/pull
 │   ├── detect_stack.sh                                # Deterministic tech-stack detector
-│   └── build_issues_csv.py                            # JSON findings → csv tracker (stdlib only)
+│   ├── build_issues_csv.py                            # JSON findings → csv tracker (stdlib only)
+│   └── install-global.sh                              # Installs code-scan into a shared .claude/ dir
 ├── quality-gate/                                      # Quality Gate Toolkit
 │   ├── package.json                                   # Frontend tools (ESLint, Stylelint)
 │   ├── rules-manifest.json                            # Master rule catalog

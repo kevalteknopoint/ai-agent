@@ -7,6 +7,16 @@ shape applies to `spring-boot-unit-test-cases`.
 
 ## Code Scan — 2-Minute Start (most common ask: "review this repo")
 
+**One-time setup** so it's available from any project directory, not just from inside this repo:
+```bash
+./scripts/install-global.sh
+```
+(See [README.md → Wiring it into Claude Code](README.md#2-wiring-it-into-claude-code--making-it-invokable-from-anywhere)
+for what this does and how to target a different `.claude/` location.) Start a fresh Claude Code
+session after running it.
+
+Then, from anywhere:
+
 Interactive — just tell Claude Code what to scan, no JSON needed:
 ```
 Use the code-scan skill on https://github.com/org/aem-project.git
@@ -20,8 +30,9 @@ Headless (no prompts — for CI or scripted runs):
 /code-scan --args '{"repoUrl": "https://github.com/org/aem-project.git", "branch": "main"}'
 ```
 
-No extra install needed — cloning, stack detection, and the CSV tracker are all zero-dependency
-shell/Python (stdlib only). 👉 [CODE-SCAN-GUIDE.md](docs/CODE-SCAN-GUIDE.md) for the full pipeline.
+Beyond that one-time install, no dependency to install — cloning, stack detection, and the CSV
+tracker are all zero-dependency shell/Python (stdlib only).
+👉 [CODE-SCAN-GUIDE.md](docs/CODE-SCAN-GUIDE.md) for the full pipeline.
 
 ## Quality Gate — Zero-AI Lint Pass
 
