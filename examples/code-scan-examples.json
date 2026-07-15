@@ -1,0 +1,33 @@
+{
+  "comment": "Sample configuration for the code-scan workflow (workflows/code-scan.js). For interactive use (asks for URL + branch conversationally), use the 'code-scan' skill instead — these examples are for the headless/batch invocation.",
+
+  "example_1_single_repo": {
+    "description": "Scan a single repo on its main branch",
+    "repoUrl": "https://github.com/your-org/aem-project.git",
+    "branch": "main"
+  },
+
+  "example_2_multiple_repos": {
+    "description": "Scan several repos in one run — each gets independent stack detection, so a pure-EDS repo never triggers the Java analyzer and vice versa",
+    "repos": [
+      { "repoUrl": "https://github.com/your-org/aem-backend.git", "branch": "main" },
+      { "repoUrl": "https://github.com/your-org/eds-storefront.git", "branch": "main" },
+      { "repoUrl": "https://github.com/your-org/marketing-site.git", "branch": "develop" }
+    ]
+  },
+
+  "example_3_trusted_mode": {
+    "description": "Skip the setup/analysis confirmation gates — for CI or batch sweeps where you already trust the target list",
+    "trustedMode": true,
+    "repos": [
+      { "repoUrl": "https://github.com/your-org/aem-backend.git", "branch": "main" }
+    ]
+  },
+
+  "example_4_custom_location": {
+    "description": "Override the default clone location (defaults to <ai-agent-repo>/repos)",
+    "repoUrl": "https://github.com/your-org/aem-project.git",
+    "branch": "main",
+    "baseDir": "/Users/kevaljoshi/Documents/code-scans/repos"
+  }
+}

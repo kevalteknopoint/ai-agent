@@ -1,8 +1,18 @@
 # AEM Development Automation Toolkit
 
-AI-powered and rule-driven automation for Adobe AEM as a Cloud Service (AEMaaCS) projects: unit test generation, Spring Boot testing, and rule-driven quality analysis.
+AI-powered and rule-driven automation for Adobe AEM as a Cloud Service (AEMaaCS) projects: unit test generation, Spring Boot testing, rule-driven quality analysis, and multi-agent security-first code scanning.
 
 ## Available Workflows
+
+### Code Scanning (Multi-Agent, Stack-Aware)
+
+🔎 **Code Scan** (`code-scan`)
+- Give it a GitHub URL and branch — it clones/updates, detects the tech stack, and dispatches only the analyzers that apply
+- Five specialized reviewers: Java/Spring Boot, AEM Sightly (HTL), EDS blocks, JS/React, CSS/SCSS
+- Each writes a severity-ranked Markdown report + Excel issue tracker to `./analysis/` in the scanned repo
+- Model tier scales with blast radius: Opus for the Java/Spring Boot backend, Sonnet for AEM HTL/EDS/React, Haiku for CSS — plus zero-token deterministic clone/detect/xlsx-build steps
+- Two entry points: the `code-scan` **skill** (interactive — asks for URL/branch) or the `code-scan` **workflow** (headless — pass `repoUrl`/`branch` as args)
+- 👉 See [CODE-SCAN-GUIDE.md](docs/CODE-SCAN-GUIDE.md) for the full pipeline and model-tiering rationale
 
 ### Testing & Code Generation (AI-Driven)
 
@@ -297,6 +307,29 @@ The workflow returns a comprehensive result object:
 
 👉 See [AEM-QUALITY-GATE-GUIDE.md](docs/AEM-QUALITY-GATE-GUIDE.md) for detailed guide
 
+### For Deep, Stack-Aware Code Review
+
+**Any AEM/EDS/Spring Boot/React repo?** Use `code-scan`
+
+Interactive (asks for the URL and branch):
+```
+Use the code-scan skill on https://github.com/org/aem-project.git
+```
+
+Headless/batch:
+```bash
+/code-scan --args '{
+  "repoUrl": "https://github.com/org/aem-project.git",
+  "branch": "main"
+}'
+```
+
+Unlike Quality Gate (rule-engine linting, zero AI), `code-scan` runs five
+domain-expert LLM reviewers — but only the ones whose stack is actually
+detected in the repo, and each on the model tier its blast radius warrants.
+
+👉 See [CODE-SCAN-GUIDE.md](docs/CODE-SCAN-GUIDE.md) for detailed guide
+
 ## Documentation
 
 ### Test Generation
@@ -310,6 +343,9 @@ The workflow returns a comprehensive result object:
 - **[AEM-QUALITY-GATE-GUIDE.md](docs/AEM-QUALITY-GATE-GUIDE.md)** - Complete Quality Gate guide, usage, rules, and CI/CD integration
 - **[README.md](quality-gate/)** - Quality Gate toolkit directory with rule definitions
 
+### Code Scanning
+- **[CODE-SCAN-GUIDE.md](docs/CODE-SCAN-GUIDE.md)** - Full pipeline, stack-detection rules, and model-tiering rationale
+
 ## File Structure
 
 ```
@@ -320,8 +356,24 @@ ai-agent/
 ├── workflows/
 │   ├── aem-unit-test-cases.js                         # AEM test generation
 │   ├── spring-boot-unit-test-cases.js                 # Spring Boot test generation
-│   └── aem-quality-gate.js                            # Quality analysis (NEW)
-├── quality-gate/                                      # Quality Gate Toolkit (NEW)
+│   ├── aem-quality-gate.js                            # Quality analysis
+│   └── code-scan.js                                   # Multi-agent code scan, headless/batch (NEW)
+├── agents/
+│   ├── vbrd-to-proofhub.md                            # VBRD → ProofHub translation
+│   ├── code-scan-orchestrator.md                      # Clone/branch/detect router (haiku) (NEW)
+│   ├── java-springboot-analyzer.md                    # Backend security review (opus) (NEW)
+│   ├── aem-htl-analyzer.md                            # HTL/Sightly XSS + authoring review (sonnet) (NEW)
+│   ├── eds-blocks-analyzer.md                         # EDS blocks CWV + DOM review (sonnet) (NEW)
+│   ├── js-react-analyzer.md                           # React correctness/security review (sonnet) (NEW)
+│   └── css-scss-analyzer.md                           # CSS/SCSS architecture review (haiku) (NEW)
+├── skills/
+│   └── code-scan/
+│       └── SKILL.md                                   # Interactive code-scan entry point (NEW)
+├── scripts/
+│   ├── clone_or_update.sh                             # Deterministic clone/checkout/pull (NEW)
+│   ├── detect_stack.sh                                # Deterministic tech-stack detector (NEW)
+│   └── build_issues_xlsx.py                           # JSON findings → xlsx tracker (NEW)
+├── quality-gate/                                      # Quality Gate Toolkit
 │   ├── package.json                                   # Frontend tools (ESLint, Stylelint)
 │   ├── rules-manifest.json                            # Master rule catalog
 │   ├── rules/
@@ -339,11 +391,13 @@ ai-agent/
 │   ├── SPRING-BOOT-WORKFLOW-GUIDE.md                  # Spring Boot guide
 │   ├── AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md           # AEM technical deep-dive
 │   ├── AEM-UNIT-TEST-CASES-BEFORE-AFTER.md            # AEM before/after
-│   └── AEM-QUALITY-GATE-GUIDE.md                      # Quality Gate complete guide (NEW)
+│   ├── AEM-QUALITY-GATE-GUIDE.md                      # Quality Gate complete guide
+│   └── CODE-SCAN-GUIDE.md                             # Code-scan pipeline + model tiering (NEW)
 └── examples/
     ├── sample-config.json                             # AEM test generation examples
     ├── spring-boot-examples.json                      # Spring Boot test examples
-    └── quality-gate-examples.json                     # Quality Gate examples (NEW)
+    ├── quality-gate-examples.json                     # Quality Gate examples
+    └── code-scan-examples.json                        # Code-scan examples (NEW)
 ```
 
 ## Key Optimizations
