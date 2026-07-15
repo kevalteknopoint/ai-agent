@@ -3,8 +3,9 @@
 Multi-agent static analysis: point it at a GitHub repo and branch, and it
 clones/updates the repo, figures out what stack it actually contains, and
 runs only the specialized reviewers that apply — each writing a
-severity-ranked Markdown report and an Excel issue tracker to `./analysis/`
-inside the scanned repo.
+severity-ranked Markdown report and a CSV issue tracker to an `analysis/`
+folder created **at the root of the cloned repo** (`<repoPath>/analysis/`,
+not inside this toolkit).
 
 ## Why this exists
 
@@ -43,11 +44,11 @@ analyzer agents.
      eds-blocks-analyzer        (sonnet)
      js-react-analyzer          (sonnet)
      css-scss-analyzer          (haiku)
-6. Each analyzer writes, inside the scanned repo:
+6. Each analyzer writes, into <repoPath>/analysis/ (created at the repo root):
      analysis/<domain>-analysis-report.md      — narrative findings, LLM-authored
      analysis/<domain>-analysis-findings.json  — structured findings, LLM-authored
-     analysis/<domain>-analysis-issues.xlsx    — generated deterministically by
-                                                  scripts/build_issues_xlsx.py from the JSON
+     analysis/<domain>-analysis-issues.csv     — generated deterministically by
+                                                  scripts/build_issues_csv.py from the JSON
 7. Summary relayed to the user / returned by the workflow
 ```
 
@@ -82,7 +83,7 @@ independent factors: **is the step mechanical or judgment-based**, and
 | `eds-blocks-analyzer` | **Sonnet** | Core Web Vitals + DOM-first correctness judgment calls that benefit from a stronger model, without backend-level stakes |
 | `js-react-analyzer` | **Sonnet** | General correctness/security review, comparable complexity to the EDS analyzer |
 | `css-scss-analyzer` | **Haiku** | Highest file-count-to-severity-ceiling ratio in the system — checks are largely rule-based (nesting depth, `!important` count, hardcoded values) and CSS's worst realistic severity (layout break, rare `expression()` injection) is lower stakes than a backend bug. The agent is instructed to say so explicitly and recommend a Sonnet re-run if it hits a genuinely hard architecture call (e.g. ITCSS layer boundaries in a large multi-brand design system) |
-| Findings → xlsx tracker | *(Python script via `scripts/build_issues_xlsx.py`)* | Every analyzer emits findings as JSON; formatting into a frozen-header, autofiltered, conditionally-formatted spreadsheet is 100% mechanical — no model should spend output tokens hand-building spreadsheet structure |
+| Findings → csv tracker | *(stdlib Python script via `scripts/build_issues_csv.py`)* | Every analyzer emits findings as JSON; formatting into a pre-sorted CSV is 100% mechanical — no model should spend output tokens hand-building the tracker, and stdlib-only means no dependency to install on a fresh clone |
 
 Net effect: a repo with no Java (e.g. pure EDS) never touches Opus at all;
 a repo with no frontend never touches the CSS/JS analyzers; and even within
@@ -92,17 +93,20 @@ never touch a model that costs more than Haiku.
 ## Output layout (inside the scanned repo, not this toolkit)
 
 ```
-<scanned-repo>/
-└── analysis/
-    ├── java-analysis-report.md / -findings.json / -issues.xlsx
-    ├── aem-htl-analysis-report.md / -findings.json / -issues.xlsx
-    ├── eds-blocks-analysis-report.md / -findings.json / -issues.xlsx
-    ├── js-react-analysis-report.md / -findings.json / -issues.xlsx
-    └── css-analysis-report.md / -findings.json / -issues.xlsx
+<scanned-repo>/                              ← repoPath, e.g. ai-agent/repos/<repoName>
+└── analysis/                                ← created at the repo root
+    ├── java-analysis-report.md / -findings.json / -issues.csv
+    ├── aem-htl-analysis-report.md / -findings.json / -issues.csv
+    ├── eds-blocks-analysis-report.md / -findings.json / -issues.csv
+    ├── js-react-analysis-report.md / -findings.json / -issues.csv
+    └── css-analysis-report.md / -findings.json / -issues.csv
 ```
 
 Only the files for detected/dispatched analyzers are written — no empty
-placeholder reports for stacks that aren't present.
+placeholder reports for stacks that aren't present. `analysis/` is a plain
+folder inside the scanned repo (not gitignored by this toolkit — if you
+don't want it committed to the scanned repo's own history, add
+`analysis/` to *that* repo's `.gitignore`).
 
 ## Extending
 
@@ -110,7 +114,7 @@ To add a sixth domain (e.g. GraphQL schemas, Terraform):
 1. Add a detection block to `scripts/detect_stack.sh` (new JSON key).
 2. Add a new `agents/<domain>-analyzer.md` following the existing five as a
    template — keep the Input contract, Workflow, Severity table, and the
-   "emit JSON → call `build_issues_xlsx.py`" Outputs pattern.
+   "emit JSON → call `build_issues_csv.py`" Outputs pattern.
 3. Add the new key → agent name mapping to
    `agents/code-scan-orchestrator.md` step 4.
 4. Pick a model tier using the same two questions: mechanical or judgment?

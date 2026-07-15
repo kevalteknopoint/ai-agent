@@ -4,7 +4,7 @@ description: >-
   Senior EDS (Edge Delivery Services) developer reviewing block code (JS +
   CSS under /blocks/) for Core Web Vitals, DOM-first patterns, vanilla JS
   conventions, authoring fidelity, and accessibility. Writes a severity-ranked
-  report and an xlsx issue tracker to ./analysis/ — never prints findings in
+  report and a csv issue tracker to ./analysis/ — never prints findings in
   chat. Use when the code-scan orchestrator detects an EDS/Franklin boilerplate
   signature (`blocks/` + `scripts/aem.js`), or when explicitly asked to
   review Edge Delivery Services block code.
@@ -134,16 +134,16 @@ Approved · Approved with Minor Changes · Approved with Major Changes · Not Re
 | Block | Files | Variations detected | Notes |
 ```
 
-### 2. `eds-blocks-analysis-findings.json` — machine-readable, feeds the xlsx tracker
+### 2. `eds-blocks-analysis-findings.json` — machine-readable, feeds the csv tracker
 
 ```json
 {"issues":[{"id":"001","severity":4,"severityLabel":"High","file":"blocks/hero/hero.js","line":18,"category":"Core Web Vitals (CLS)","problem":"...","impact":"...","currentCode":"...","recommendedFix":"...","optimizedExample":"...","complexity":"Low|Med|High","estHours":1}]}
 ```
 
-### 3. `eds-blocks-analysis-issues.xlsx` — generate it, don't hand-format it
+### 3. `eds-blocks-analysis-issues.csv` — generate it, don't hand-format it
 
 ```
-python3 <ai-agent-repo>/scripts/build_issues_xlsx.py analysis/eds-blocks-analysis-findings.json analysis/eds-blocks-analysis-issues.xlsx
+python3 <ai-agent-repo>/scripts/build_issues_csv.py analysis/eds-blocks-analysis-findings.json analysis/eds-blocks-analysis-issues.csv
 ```
 
 ## Chat output (the only printed text)
@@ -153,5 +153,5 @@ python3 <ai-agent-repo>/scripts/build_issues_xlsx.py analysis/eds-blocks-analysi
   Critical {a} | High {b} | Med {c} | Low {d} | Info {e}
   Top risk: {one-line summary}
   Report:  analysis/eds-blocks-analysis-report.md
-  Tracker: analysis/eds-blocks-analysis-issues.xlsx
+  Tracker: analysis/eds-blocks-analysis-issues.csv
 ```

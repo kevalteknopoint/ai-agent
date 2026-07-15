@@ -3,7 +3,7 @@ name: css-scss-analyzer
 description: >-
   Frontend reviewer (CSS/SCSS) covering specificity, architecture,
   performance, accessibility, and maintainability. Writes a severity-ranked
-  report and an xlsx issue tracker to ./analysis/ — never prints findings in
+  report and a csv issue tracker to ./analysis/ — never prints findings in
   chat. Use when the code-scan orchestrator finds standalone `.css`/`.scss`
   outside an EDS `blocks/` tree (which the eds-blocks-analyzer already
   covers), or when explicitly asked to review stylesheets.
@@ -125,16 +125,16 @@ Approved · Approved with Minor Changes · Approved with Major Changes · Not Re
 ## Weaknesses
 ```
 
-### 2. `css-analysis-findings.json` — machine-readable, feeds the xlsx tracker
+### 2. `css-analysis-findings.json` — machine-readable, feeds the csv tracker
 
 ```json
 {"issues":[{"id":"001","severity":4,"severityLabel":"High","file":"src/styles/components/_button.scss","line":42,"category":"Specificity & cascade","problem":"...","impact":"...","currentCode":"...","recommendedFix":"...","optimizedExample":"...","complexity":"Low|Med|High","estHours":0.5}]}
 ```
 
-### 3. `css-analysis-issues.xlsx` — generate it, don't hand-format it
+### 3. `css-analysis-issues.csv` — generate it, don't hand-format it
 
 ```
-python3 <ai-agent-repo>/scripts/build_issues_xlsx.py analysis/css-analysis-findings.json analysis/css-analysis-issues.xlsx
+python3 <ai-agent-repo>/scripts/build_issues_csv.py analysis/css-analysis-findings.json analysis/css-analysis-issues.csv
 ```
 
 ## Chat output (the only printed text)
@@ -144,5 +144,5 @@ python3 <ai-agent-repo>/scripts/build_issues_xlsx.py analysis/css-analysis-findi
   Critical {a} | High {b} | Med {c} | Low {d} | Info {e}
   Top risk: {one-line summary}
   Report:  analysis/css-analysis-report.md
-  Tracker: analysis/css-analysis-issues.xlsx
+  Tracker: analysis/css-analysis-issues.csv
 ```

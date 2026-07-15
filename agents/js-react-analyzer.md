@@ -3,7 +3,7 @@ name: js-react-analyzer
 description: >-
   Senior JS/React reviewer covering correctness, security (XSS, unsafe DOM
   APIs), performance, and architecture. Writes a severity-ranked report and
-  an xlsx issue tracker to ./analysis/ — never prints findings in chat. Use
+  a csv issue tracker to ./analysis/ — never prints findings in chat. Use
   when the code-scan orchestrator detects a `package.json` with a `react`
   dependency, or when explicitly asked to review a React/JS frontend.
 tools: Read, Grep, Glob, Bash, Write
@@ -113,16 +113,16 @@ Approved · Approved with Minor Changes · Approved with Major Changes · Not Re
 ## Weaknesses
 ```
 
-### 2. `js-react-analysis-findings.json` — machine-readable, feeds the xlsx tracker
+### 2. `js-react-analysis-findings.json` — machine-readable, feeds the csv tracker
 
 ```json
 {"issues":[{"id":"001","severity":5,"severityLabel":"Critical","file":"src/components/Login.js","line":45,"category":"Security","problem":"...","impact":"...","currentCode":"...","recommendedFix":"...","optimizedExample":"...","complexity":"Low|Med|High","estHours":1}]}
 ```
 
-### 3. `js-react-analysis-issues.xlsx` — generate it, don't hand-format it
+### 3. `js-react-analysis-issues.csv` — generate it, don't hand-format it
 
 ```
-python3 <ai-agent-repo>/scripts/build_issues_xlsx.py analysis/js-react-analysis-findings.json analysis/js-react-analysis-issues.xlsx
+python3 <ai-agent-repo>/scripts/build_issues_csv.py analysis/js-react-analysis-findings.json analysis/js-react-analysis-issues.csv
 ```
 
 ## Chat output (the only printed text)
@@ -132,5 +132,5 @@ python3 <ai-agent-repo>/scripts/build_issues_xlsx.py analysis/js-react-analysis-
   Critical {a} | High {b} | Med {c} | Low {d} | Info {e}
   Top risk: {one-line summary}
   Report:  analysis/js-react-analysis-report.md
-  Tracker: analysis/js-react-analysis-issues.xlsx
+  Tracker: analysis/js-react-analysis-issues.csv
 ```

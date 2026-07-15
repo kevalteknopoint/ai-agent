@@ -4,7 +4,7 @@ description: >-
   Senior Java/Spring Boot security-first static code analyzer. Reviews
   correctness, security (injection, auth, secrets, crypto), concurrency,
   performance (N+1, connection leaks), and architecture across a Spring Boot
-  or AEM-backend Java codebase. Writes a severity-ranked report and an xlsx
+  or AEM-backend Java codebase. Writes a severity-ranked report and a csv
   issue tracker to ./analysis/ — never prints findings in chat. Use when the
   code-scan orchestrator detects `src/main/java` + `pom.xml`/`build.gradle`,
   or when explicitly asked to review Java/Spring Boot backend code.
@@ -131,19 +131,20 @@ Approved · Approved with Minor Changes · Approved with Major Changes · Not Re
 ## Weaknesses
 ```
 
-### 2. `java-analysis-findings.json` — machine-readable, feeds the xlsx tracker
+### 2. `java-analysis-findings.json` — machine-readable, feeds the csv tracker
 
 ```json
 {"issues":[{"id":"001","severity":5,"severityLabel":"Critical","file":"src/main/java/com/acme/user/UserController.java","line":78,"category":"Security","problem":"...","impact":"...","currentCode":"...","recommendedFix":"...","optimizedExample":"...","complexity":"Low|Med|High","estHours":1.5}]}
 ```
 
-### 3. `java-analysis-issues.xlsx` — generate it, don't hand-format it
+### 3. `java-analysis-issues.csv` — generate it, don't hand-format it
 
 After writing the JSON above, run:
 ```
-python3 <ai-agent-repo>/scripts/build_issues_xlsx.py analysis/java-analysis-findings.json analysis/java-analysis-issues.xlsx
+python3 <ai-agent-repo>/scripts/build_issues_csv.py analysis/java-analysis-findings.json analysis/java-analysis-issues.csv
 ```
-This produces the frozen-header, autofiltered, severity-conditional-formatted tracker deterministically — do not attempt to construct the xlsx by hand.
+This produces the tracker (header row, pre-sorted severity desc then file
+asc) deterministically, stdlib-only — do not hand-construct the CSV.
 
 ## Chat output (the only printed text)
 
@@ -152,5 +153,5 @@ This produces the frozen-header, autofiltered, severity-conditional-formatted tr
   Critical {a} | High {b} | Med {c} | Low {d} | Info {e}
   Top risk: {one-line summary}
   Report:  analysis/java-analysis-report.md
-  Tracker: analysis/java-analysis-issues.xlsx
+  Tracker: analysis/java-analysis-issues.csv
 ```

@@ -3,7 +3,7 @@ name: aem-htl-analyzer
 description: >-
   Senior AEM developer reviewing HTL (Sightly) templates for XSS context
   handling, Sling Model binding, authoring/edit-mode behaviour, performance,
-  and maintainability. Writes a severity-ranked report and an xlsx issue
+  and maintainability. Writes a severity-ranked report and a csv issue
   tracker to ./analysis/ — never prints findings in chat. Use when the
   code-scan orchestrator detects `jcr_root/apps/**/*.html` with HTL/Sightly
   syntax, or when explicitly asked to review AEM component/template markup.
@@ -125,16 +125,16 @@ Approved · Approved with Minor Changes · Approved with Major Changes · Not Re
 | Model FQCN | Used by | Notes |
 ```
 
-### 2. `aem-htl-analysis-findings.json` — machine-readable, feeds the xlsx tracker
+### 2. `aem-htl-analysis-findings.json` — machine-readable, feeds the csv tracker
 
 ```json
 {"issues":[{"id":"001","severity":5,"severityLabel":"Critical","file":"ui.apps/.../hero.html","line":24,"category":"XSS & context handling","problem":"...","impact":"...","currentCode":"...","recommendedFix":"...","optimizedExample":"...","complexity":"Low|Med|High","estHours":0.5}]}
 ```
 
-### 3. `aem-htl-analysis-issues.xlsx` — generate it, don't hand-format it
+### 3. `aem-htl-analysis-issues.csv` — generate it, don't hand-format it
 
 ```
-python3 <ai-agent-repo>/scripts/build_issues_xlsx.py analysis/aem-htl-analysis-findings.json analysis/aem-htl-analysis-issues.xlsx
+python3 <ai-agent-repo>/scripts/build_issues_csv.py analysis/aem-htl-analysis-findings.json analysis/aem-htl-analysis-issues.csv
 ```
 
 ## Chat output (the only printed text)
@@ -144,5 +144,5 @@ python3 <ai-agent-repo>/scripts/build_issues_xlsx.py analysis/aem-htl-analysis-f
   Critical {a} | High {b} | Med {c} | Low {d} | Info {e}
   Top risk: {one-line summary}
   Report:  analysis/aem-htl-analysis-report.md
-  Tracker: analysis/aem-htl-analysis-issues.xlsx
+  Tracker: analysis/aem-htl-analysis-issues.csv
 ```

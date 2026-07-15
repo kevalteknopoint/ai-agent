@@ -164,7 +164,7 @@ const results = await pipeline(
           `evidence: ${JSON.stringify(a.evidence || [])}\n` +
           `ai-agent-repo: ${AI_AGENT_REPO}\n\n` +
           `Follow your own workflow exactly: discover → read line-by-line → cross-file pass → ` +
-          `write ./analysis/ report + findings JSON + xlsx tracker (via scripts/build_issues_xlsx.py) → ` +
+          `write ./analysis/ report + findings JSON + csv tracker (via scripts/build_issues_csv.py) → ` +
           `return the structured summary.`,
           { label: `analyze:${a.agent}:${repoName}`, phase: 'Code Analysis', agentType: a.agent, schema: ANALYSIS_SCHEMA },
         ).then(r => ({ analyzer: a.agent, ...r })),

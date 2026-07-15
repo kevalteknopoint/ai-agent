@@ -1,6 +1,37 @@
 # Quick Start Guide
 
-## 5-Minute Setup
+This toolkit has four workflows and a code-scan skill — see [README.md](README.md) for the full
+catalog. This guide covers the fastest path for each; the detailed walkthrough below (permission
+gates, examples, troubleshooting) is written for `aem-unit-test-cases` specifically but the same
+shape applies to `spring-boot-unit-test-cases`.
+
+## Code Scan — 2-Minute Start (most common ask: "review this repo")
+
+Interactive — just tell Claude Code what to scan, no JSON needed:
+```
+Use the code-scan skill on https://github.com/org/aem-project.git
+```
+It asks which branch, shows you the detected stack (Java/Spring Boot, AEM HTL, EDS blocks,
+React, CSS/SCSS — whichever apply), confirms the plan, then runs only the matching reviewer
+agents in parallel. Reports land in `analysis/` at the root of the cloned repo.
+
+Headless (no prompts — for CI or scripted runs):
+```bash
+/code-scan --args '{"repoUrl": "https://github.com/org/aem-project.git", "branch": "main"}'
+```
+
+No extra install needed — cloning, stack detection, and the CSV tracker are all zero-dependency
+shell/Python (stdlib only). 👉 [CODE-SCAN-GUIDE.md](docs/CODE-SCAN-GUIDE.md) for the full pipeline.
+
+## Quality Gate — Zero-AI Lint Pass
+
+```bash
+/aem-quality-gate --args '{"repositories":[{"repoUrl":"https://github.com/org/aem-project.git","repoName":"my-app","branch":"main"}]}'
+```
+Needs `cd quality-gate && npm install` once (pulls in ESLint/Stylelint). No LLM tokens spent
+scanning. 👉 [AEM-QUALITY-GATE-GUIDE.md](docs/AEM-QUALITY-GATE-GUIDE.md)
+
+## Unit Test Generation — 5-Minute Setup
 
 ### 1. Install Claude Code
 ```bash

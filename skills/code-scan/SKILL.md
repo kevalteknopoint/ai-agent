@@ -100,10 +100,10 @@ serialize them. Each invocation should include:
 Review <agent's domain> in this repo.
 repoPath: <repoPath>
 evidence: <the evidence file list from the routing plan, if non-empty>
-ai-agent-repo: <ai-agent-repo>  (for the shared scripts/build_issues_xlsx.py path)
+ai-agent-repo: <ai-agent-repo>  (for the shared scripts/build_issues_csv.py path)
 
 Follow your own workflow exactly: discover → read line-by-line → cross-file
-pass → write ./analysis/ report + findings JSON + xlsx tracker → print only
+pass → write ./analysis/ report + findings JSON + csv tracker → print only
 your 5-line chat summary.
 ```
 
@@ -111,11 +111,13 @@ your 5-line chat summary.
 
 Once all dispatched analyzers return, relay each one's 5-line chat summary
 verbatim (don't paraphrase away the file/issue counts) and list the output
-paths so the user knows where to look:
+paths so the user knows where to look — everything lands in `analysis/` at
+the root of the cloned repo (`<repoPath>/analysis/`, not inside this
+toolkit):
 
 ```
-analysis/java-analysis-report.md, analysis/java-analysis-issues.xlsx
-analysis/css-analysis-report.md, analysis/css-analysis-issues.xlsx
+analysis/java-analysis-report.md, analysis/java-analysis-issues.csv
+analysis/css-analysis-report.md, analysis/css-analysis-issues.csv
 ```
 
 If any analyzer failed or was skipped, say so explicitly rather than
@@ -140,5 +142,5 @@ just refreshes the report — there's no stale-state cleanup needed.
   expensive to miss; CSS gets the cheapest because its checks are largely
   pattern-based and its worst-case severity ceiling is lower.
 - Each analyzer emits findings as JSON and hands formatting off to
-  `scripts/build_issues_xlsx.py` — no model spends output tokens
-  hand-constructing spreadsheet XML.
+  `scripts/build_issues_csv.py` (stdlib-only, no dependency to install) —
+  no model spends output tokens hand-constructing the tracker file.
