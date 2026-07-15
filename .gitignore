@@ -1,6 +1,7 @@
 # Local project artifacts
 project-unit-test\ cases/
-repos/
+/repos/
+/repos/**
 
 # IDE
 .vscode/

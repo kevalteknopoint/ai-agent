@@ -39,11 +39,11 @@ analyzer agents.
      └─ returns: which of the 5 analyzers apply + evidence file lists
 4. Confirm the plan with the user (skill only — workflow has a permission gate instead)
 5. Dispatch only the detected analyzers, IN PARALLEL:
-     java-springboot-analyzer   (opus)
+   java-springboot-analyzer   (sonnet)
      aem-htl-analyzer           (sonnet)
      eds-blocks-analyzer        (sonnet)
      js-react-analyzer          (sonnet)
-     css-scss-analyzer          (haiku)
+   css-scss-analyzer          (sonnet)
 6. Each analyzer writes, into <repoPath>/analysis/ (created at the repo root):
      analysis/<domain>-analysis-report.md      — narrative findings, LLM-authored
      analysis/<domain>-analysis-findings.json  — structured findings, LLM-authored
@@ -66,29 +66,28 @@ A repo can trigger multiple analyzers (e.g. a classic AEM project: Java +
 HTL + CSS) or exactly one (an EDS-only storefront: just `eds-blocks-analyzer`).
 Detection is pure `find`/`grep` — no model ever guesses the stack.
 
-## Model tiering (token-usage optimization)
+## Model policy (token-usage optimization)
 
-The single biggest cost lever in a multi-agent system like this is *which
-model runs which step*, not prompt length. This system tiers by two
-independent factors: **is the step mechanical or judgment-based**, and
-**what's the blast radius if the judgment is wrong**.
+The single biggest cost lever in a multi-agent system like this is keeping
+planning centralized and execution scoped, rather than running heavyweight
+reasoning across irrelevant files. This system uses a fixed model policy:
+**Opus for planning/orchestration** and **Sonnet for execution/review**.
 
 | Step | Model | Why |
 |---|---|---|
 | Repo clone/checkout/pull | *(shell script, no model)* | Purely deterministic — a model adds cost and a chance of mis-executing git commands for zero benefit |
 | Stack detection | *(shell script, no model)* | `find`/`grep` pattern matching; a model would spend tokens re-deriving what a glob already answers exactly |
-| `code-scan-orchestrator` (the agent that *calls* the two scripts above) | **Haiku** | Its only job is running two shell scripts and reshaping JSON — no code-review reasoning happens here |
-| `java-springboot-analyzer` | **Opus** | Backend code — SQL injection, broken auth, secret exposure, data corruption. Highest blast radius in the system if a finding is missed or a false negative slips through; worth the spend |
+| `code-scan-orchestrator` (the agent that *calls* the two scripts above) | **Opus** | Planning/orchestration stage: deterministic setup + routing, strict schema output |
+| `java-springboot-analyzer` | **Sonnet** | Execution-stage backend review with strict scope and file-level evidence |
 | `aem-htl-analyzer` | **Sonnet** | Still security-relevant (XSS context handling) but scoped to templating layer; Sonnet handles context-based pattern matching reliably |
 | `eds-blocks-analyzer` | **Sonnet** | Core Web Vitals + DOM-first correctness judgment calls that benefit from a stronger model, without backend-level stakes |
 | `js-react-analyzer` | **Sonnet** | General correctness/security review, comparable complexity to the EDS analyzer |
-| `css-scss-analyzer` | **Haiku** | Highest file-count-to-severity-ceiling ratio in the system — checks are largely rule-based (nesting depth, `!important` count, hardcoded values) and CSS's worst realistic severity (layout break, rare `expression()` injection) is lower stakes than a backend bug. The agent is instructed to say so explicitly and recommend a Sonnet re-run if it hits a genuinely hard architecture call (e.g. ITCSS layer boundaries in a large multi-brand design system) |
+| `css-scss-analyzer` | **Sonnet** | Execution-stage stylesheet review remains scoped and schema-driven for consistent output quality |
 | Findings → csv tracker | *(stdlib Python script via `scripts/build_issues_csv.py`)* | Every analyzer emits findings as JSON; formatting into a pre-sorted CSV is 100% mechanical — no model should spend output tokens hand-building the tracker, and stdlib-only means no dependency to install on a fresh clone |
 
-Net effect: a repo with no Java (e.g. pure EDS) never touches Opus at all;
-a repo with no frontend never touches the CSS/JS analyzers; and even within
-a full-stack repo, the two cheapest steps (routing, tracker generation)
-never touch a model that costs more than Haiku.
+Net effect: Opus is used only for planning/routing; Sonnet is used only for
+execution analyzers that are actually needed for the detected stack; and
+clone/detect/tracker generation still spend zero LLM tokens.
 
 ## Output layout (inside the scanned repo, not this toolkit)
 
@@ -117,5 +116,5 @@ To add a sixth domain (e.g. GraphQL schemas, Terraform):
    "emit JSON → call `build_issues_csv.py`" Outputs pattern.
 3. Add the new key → agent name mapping to
    `agents/code-scan-orchestrator.md` step 4.
-4. Pick a model tier using the same two questions: mechanical or judgment?
-   what's the blast radius if wrong?
+4. Keep the same model policy: Opus for planning/orchestration updates,
+   Sonnet for execution analyzer updates.

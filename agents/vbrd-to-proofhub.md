@@ -10,7 +10,7 @@ description: >-
   task (Jira-style enhancement) instead of duplicating it. Attaches the per-component
   screenshot to each task and the full workbook to the project.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch
-model: inherit
+model: sonnet
 ---
 
 # VBRD → ProofHub translation engineer

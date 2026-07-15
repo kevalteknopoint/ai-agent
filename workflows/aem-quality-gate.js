@@ -11,12 +11,15 @@ export const meta = {
   ],
 }
 
+const MODEL_PLANNING = 'opus'
+const MODEL_EXECUTION = 'sonnet'
+
 // Helper: request approval from user
 async function requestPermission(prompt, schema, trustedMode = false) {
   if (trustedMode) {
     return { approved: true, trusted: true, reason: 'Trusted Mode: auto-approved' }
   }
-  return await agent(prompt, { schema })
+  return await agent(prompt, { model: MODEL_PLANNING, schema })
 }
 
 // Helper: clone repo and setup
@@ -38,7 +41,7 @@ async function setupRepository(repo, baseDir, trustedMode) {
 
   const cloneResult = await agent(
     `Clone ${repo.repoUrl} to ${baseDir}/${repo.repoName}, checkout branch ${repo.branch}`,
-    { agentType: 'general-purpose' }
+    { agentType: 'general-purpose', model: MODEL_EXECUTION }
   )
 
   return { status: 'success', repoPath: `${baseDir}/${repo.repoName}`, ...cloneResult }
@@ -50,7 +53,7 @@ async function runQualityScan(repoPath) {
   1. Execute ./run-quality-gate.sh ${repoPath} ${repoPath}/quality-reports/$(date +%s)
   2. Return JSON with paths to all generated reports (pmd-report.json, checkstyle-report.xml, eslint-report.json, stylelint-report.json, clientlib-report.json, htl-report.log)`
 
-  const scanResult = await agent(scanPrompt, { agentType: 'general-purpose' })
+  const scanResult = await agent(scanPrompt, { agentType: 'general-purpose', model: MODEL_EXECUTION })
   return { ...scanResult, timestamp: Date.now() }
 }
 
@@ -61,7 +64,7 @@ async function aggregateReports(reportDir) {
   - Run node aggregate-report.js ${reportDir}
   - Return the aggregated JSON report with dimension ratings and finding counts`
 
-  const aggregateResult = await agent(aggregatePrompt, { agentType: 'general-purpose' })
+  const aggregateResult = await agent(aggregatePrompt, { agentType: 'general-purpose', model: MODEL_EXECUTION })
   return aggregateResult
 }
 
@@ -145,6 +148,7 @@ Return structured proposal as JSON with keys: [summaryByDimension, proposedAdjus
 
   curatorProposal = await agent(curatorPrompt, {
     agentType: 'aem-quality-rule-curator',
+    model: MODEL_EXECUTION,
     schema: {
       type: 'object',
       properties: {
@@ -167,7 +171,7 @@ Return structured proposal as JSON with keys: [summaryByDimension, proposedAdjus
       required: ['approved'],
     }
 
-    const applyPermission = await agent(applyPrompt, { schema: applySchema })
+    const applyPermission = await agent(applyPrompt, { model: MODEL_PLANNING, schema: applySchema })
     if (applyPermission.approved) {
       // In production, would write curatorProposal to rules-manifest.json
       log('Rule changes approved and saved to rules-manifest.json')

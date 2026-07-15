@@ -25,6 +25,8 @@ phase('Input Validation')
 const AI_AGENT_REPO = args?.aiAgentRepo || '/Users/kevaljoshi/Documents/ai-agent'
 const baseDir = args?.baseDir || `${AI_AGENT_REPO}/repos`
 const trustedMode = args?.trustedMode === true
+const MODEL_PLANNING = 'opus'
+const MODEL_EXECUTION = 'sonnet'
 
 const targets = Array.isArray(args?.repos)
   ? args.repos
@@ -52,7 +54,7 @@ const requestPermission = async (operationName, details, repoName) => {
     {
       label: `perm:${operationName}:${repoName}`,
       phase: 'Repository Setup',
-      model: 'haiku',
+      model: MODEL_PLANNING,
       schema: {
         type: 'object',
         properties: { approved: { type: 'boolean' }, reason: { type: 'string' } },
@@ -124,7 +126,13 @@ const results = await pipeline(
 
     const routing = await agent(
       `Set up and route this repo for code-scan.\nrepoUrl: ${repoUrl}\nbranch: ${branch}\nbaseDir: ${baseDir}\nai-agent-repo: ${AI_AGENT_REPO}`,
-      { label: `setup:${repoName}`, phase: 'Repository Setup', agentType: 'code-scan-orchestrator', schema: ROUTING_SCHEMA },
+      {
+        label: `setup:${repoName}`,
+        phase: 'Repository Setup',
+        agentType: 'code-scan-orchestrator',
+        model: MODEL_PLANNING,
+        schema: ROUTING_SCHEMA,
+      },
     )
 
     if (!routing?.ready) {
@@ -166,7 +174,13 @@ const results = await pipeline(
           `Follow your own workflow exactly: discover → read line-by-line → cross-file pass → ` +
           `write ./analysis/ report + findings JSON + csv tracker (via scripts/build_issues_csv.py) → ` +
           `return the structured summary.`,
-          { label: `analyze:${a.agent}:${repoName}`, phase: 'Code Analysis', agentType: a.agent, schema: ANALYSIS_SCHEMA },
+          {
+            label: `analyze:${a.agent}:${repoName}`,
+            phase: 'Code Analysis',
+            agentType: a.agent,
+            model: MODEL_EXECUTION,
+            schema: ANALYSIS_SCHEMA,
+          },
         ).then(r => ({ analyzer: a.agent, ...r })),
       ),
     )

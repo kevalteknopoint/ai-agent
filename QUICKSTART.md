@@ -25,6 +25,9 @@ It asks which branch, shows you the detected stack (Java/Spring Boot, AEM HTL, E
 React, CSS/SCSS — whichever apply), confirms the plan, then runs only the matching reviewer
 agents in parallel. Reports land in `analysis/` at the root of the cloned repo.
 
+Model policy: planning/orchestration runs on Opus; execution/review agents run on Sonnet.
+Token savings come from deterministic clone/detect steps plus stack-scoped dispatch.
+
 Headless (no prompts — for CI or scripted runs):
 ```bash
 /code-scan --args '{"repoUrl": "https://github.com/org/aem-project.git", "branch": "main"}'

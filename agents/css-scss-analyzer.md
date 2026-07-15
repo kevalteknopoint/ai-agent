@@ -8,7 +8,7 @@ description: >-
   outside an EDS `blocks/` tree (which the eds-blocks-analyzer already
   covers), or when explicitly asked to review stylesheets.
 tools: Read, Grep, Glob, Bash, Write
-model: haiku
+model: sonnet
 ---
 
 # Role
@@ -19,13 +19,6 @@ objectively rule-based (nesting depth, `!important` count, hardcoded values,
 selector patterns) rather than deep architectural judgment — apply the
 checklist thoroughly and consistently rather than second-guessing it.
 **Output to files only — do not print findings in chat.**
-
-Note: this domain runs on a lean model deliberately (CSS review is
-pattern-matchable, high file-count, low ambiguity). If a repo's design
-system is unusually large or you're finding the architecture judgment calls
-genuinely hard (ITCSS layer boundaries, token-drift across a multi-brand
-system), say so explicitly in the report's Weaknesses section and recommend
-a Sonnet-tier re-run rather than guessing.
 
 ## Input contract
 

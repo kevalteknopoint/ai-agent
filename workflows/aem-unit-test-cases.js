@@ -15,6 +15,8 @@ phase('Input Validation')
 
 const testCases = args?.testCases || []
 const trustedMode = args?.trustedMode === true
+const MODEL_PLANNING = 'opus'
+const MODEL_EXECUTION = 'sonnet'
 // ENFORCE strict location: project-unit-test cases/repos
 // Note: process.cwd() doesn't work in workflow sandbox, use hardcoded path or override via args.baseDir
 const baseDir = args?.baseDir || '/Users/kevaljoshi/Documents/project-source/project-unit-test cases/repos'
@@ -49,6 +51,7 @@ Confirm before proceeding.`,
     {
       label: `perm:${operationName}:${repoName}`,
       phase: `${operationName} (Permission)`,
+      model: MODEL_PLANNING,
       schema: {
         type: 'object',
         properties: {
@@ -110,6 +113,7 @@ Return: {repoPath, featureBranch: 'feature/ai-unit-test-cases', ready: true/fals
         label: `setup:${repoName}`,
         phase: 'Repository Setup',
         agentType: 'general-purpose',
+        model: MODEL_PLANNING,
         schema: {
           type: 'object',
           properties: {
@@ -180,6 +184,7 @@ Work in ${repoPath} only.`,
         label: `test-gen:${repoName}`,
         phase: 'Test Generation',
         agentType: 'aem-test-case-creator',
+        model: MODEL_EXECUTION,
         schema: {
           type: 'object',
           properties: {
@@ -251,6 +256,7 @@ Work in ${testGenResult.repoPath} only.`,
         label: `validate:${testGenResult.repoName}`,
         phase: 'Local Build Validation',
         agentType: 'general-purpose',
+        model: MODEL_EXECUTION,
         schema: {
           type: 'object',
           properties: {
@@ -306,6 +312,7 @@ Return: {pushed: boolean, error?: string}`,
         label: `push:${validationResult.repoName}`,
         phase: 'Push to Branch',
         agentType: 'general-purpose',
+        model: MODEL_EXECUTION,
         schema: {
           type: 'object',
           properties: {

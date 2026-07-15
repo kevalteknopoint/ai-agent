@@ -1,6 +1,45 @@
 # Changelog
 
-All notable changes to the Unit Test Cases workflow agents are documented in this file.
+All notable changes to this AI automation toolkit are documented in this file.
+
+## [1.3.0] - 2026-07-15
+
+### Changed
+- **Global model policy standardized across agents, skills, workflows, and docs**
+  - Planning/orchestration now uses Opus.
+  - Execution/review/generation now uses Sonnet.
+  - Removed previous mixed execution tiering assumptions from code-scan docs and skill guidance.
+
+- **Agent model assignments aligned to the policy**
+  - `code-scan-orchestrator` moved to Opus (planning stage).
+  - `java-springboot-analyzer` moved to Sonnet (execution stage).
+  - `css-scss-analyzer` moved to Sonnet (execution stage).
+  - `vbrd-to-proofhub` set to Sonnet.
+
+- **Workflow execution model routing enforced in code**
+  - Added explicit planning/execution model constants in:
+    - `workflows/code-scan.js`
+    - `workflows/aem-unit-test-cases.js`
+    - `workflows/spring-boot-unit-test-cases.js`
+    - `workflows/aem-quality-gate.js`
+  - Permission and orchestration calls route to Opus.
+  - Execution/generation/analysis calls route to Sonnet.
+
+- **Documentation expanded and normalized for onboarding and operations**
+  - `README.md` updated with clone-first setup, install/verify flow, AE defaults, full model policy, and refreshed component catalog.
+  - `QUICKSTART.md` updated with policy-aligned code-scan usage note.
+  - `docs/CODE-SCAN-GUIDE.md` updated from model tiering language to fixed policy language.
+
+### Fixed
+- **Repository hygiene for local scan clones**
+  - `.gitignore` hardened with root-level `/repos/` and `/repos/**` exclusions.
+  - Verified `repos/` currently has zero tracked files in git.
+
+### Benefits
+- Predictable model behavior across the toolkit (no hidden per-agent tier drift).
+- Better governance: planning and execution responsibilities are clearly separated.
+- Token efficiency preserved via deterministic preprocessing and stack-scoped dispatch.
+- Lower risk of accidental commit noise from local cloned repositories.
 
 ## [1.2.0] - 2026-07-06
 

@@ -8,6 +8,44 @@ This README is the full catalog — every agent, workflow, and skill in this rep
 what model/tools it uses, and how to run it. If you're new to this repo (including "someone just
 handed me this repo"), start at [Setup — using this repo](#setup--using-this-repo-fresh-clone-or-shared-copy).
 
+## Start Here — Clone, Install, Verify
+
+### 1. Clone this toolkit repo
+
+```bash
+git clone https://github.com/<your-org>/ai-agent.git
+cd ai-agent
+```
+
+### 2. Install prerequisites
+
+```bash
+# Claude Code CLI (or use claude.ai/code)
+npm install -g @anthropic-ai/claude-code
+
+# Quality Gate dependencies (one-time)
+cd quality-gate && npm install && cd ..
+```
+
+### 3. Install agents/skills/workflows into shared Claude directory
+
+```bash
+./scripts/install-global.sh
+```
+
+### 4. Verify core commands from a fresh Claude Code session
+
+```bash
+/code-scan --args '{"repoUrl":"https://github.com/org/repo.git","branch":"main"}'
+/aem-quality-gate --args '{"repositories":[{"repoUrl":"https://github.com/org/repo.git","repoName":"repo","branch":"main"}]}'
+```
+
+### 5. AEM expert defaults (recommended)
+
+- Use `code-scan` when you need architecture + security review across mixed AEM stacks (Java + HTL + EDS + JS/CSS).
+- Use `aem-quality-gate` for fast deterministic policy enforcement before PR review.
+- Use `aem-unit-test-cases` only when you are ready to generate and push test branches.
+
 ## What's inside
 
 ### Agents (`agents/*.md`)
@@ -17,16 +55,22 @@ by its `name:` frontmatter) or as the `agentType` a workflow script dispatches t
 
 | Agent | Model | Tools | What it does |
 |---|---|---|---|
-| `code-scan-orchestrator` | Haiku | Read, Bash, Grep, Glob | Clones/updates a repo+branch and runs deterministic tech-stack detection; returns which analyzer agents apply. No code review. |
-| `java-springboot-analyzer` | Opus | Read, Grep, Glob, Bash, Write | Backend security-first review: injection, auth, secrets, concurrency, N+1 queries, resource leaks. |
+| `code-scan-orchestrator` | Opus | Read, Bash, Grep, Glob | Clones/updates a repo+branch and runs deterministic tech-stack detection; returns which analyzer agents apply. No code review. |
+| `java-springboot-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | Backend security-first review: injection, auth, secrets, concurrency, N+1 queries, resource leaks. |
 | `aem-htl-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | AEM Sightly/HTL templates: XSS context handling, Sling Model binding, authoring/edit-mode behavior. |
 | `eds-blocks-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | Edge Delivery Services blocks: Core Web Vitals, DOM-first patterns, vanilla JS conventions. |
 | `js-react-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | React/JS: correctness, XSS, hooks misuse, performance, architecture. |
-| `css-scss-analyzer` | Haiku | Read, Grep, Glob, Bash, Write | CSS/SCSS: specificity, architecture, accessibility, performance. |
-| `vbrd-to-proofhub` | inherit | Read, Write, Edit, Bash, Grep, Glob, WebFetch | Translates a Visual BRD Excel workbook into Jira-grade ProofHub tasklists/tasks (idempotent sync keyed on Component ID). |
+| `css-scss-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | CSS/SCSS: specificity, architecture, accessibility, performance. |
+| `vbrd-to-proofhub` | Sonnet | Read, Write, Edit, Bash, Grep, Glob, WebFetch | Translates a Visual BRD Excel workbook into Jira-grade ProofHub tasklists/tasks (idempotent sync keyed on Component ID). |
 
 The five analyzer agents (`java-springboot-analyzer` through `css-scss-analyzer`) are dispatched
 by the `code-scan` skill/workflow below — you rarely invoke them standalone, though you can.
+
+### Model policy (global)
+
+- Planning/orchestration uses Opus.
+- Execution/review/generation uses Sonnet.
+- Token optimization is achieved through strict scope control, deterministic pre-processing scripts, and schema-constrained outputs (not by downgrading execution model quality).
 
 ### Workflows (`workflows/*.js`)
 
@@ -174,8 +218,8 @@ agent directly; it's not part of a workflow)
 - Five specialized reviewers: Java/Spring Boot, AEM Sightly (HTL), EDS blocks, JS/React, CSS/SCSS.
 - Each writes a severity-ranked Markdown report + CSV issue tracker to `analysis/` **inside the
   scanned repo**.
-- Model tier scales with blast radius: Opus for the Java/Spring Boot backend, Sonnet for AEM
-  HTL/EDS/React, Haiku for CSS — plus zero-token deterministic clone/detect/tracker-build steps.
+- Model policy is fixed: Opus for planning/routing, Sonnet for execution analyzers — plus
+  zero-token deterministic clone/detect/tracker-build steps.
 - Two entry points: the `code-scan` **skill** (interactive — asks for URL/branch) or the
   `code-scan` **workflow** (headless — pass `repoUrl`/`branch` as args).
 
@@ -315,7 +359,7 @@ With Trusted Mode:
 ## Documentation index
 
 ### Code Scanning
-- **[CODE-SCAN-GUIDE.md](docs/CODE-SCAN-GUIDE.md)** — Full pipeline, stack-detection rules, and model-tiering rationale
+- **[CODE-SCAN-GUIDE.md](docs/CODE-SCAN-GUIDE.md)** — Full pipeline, stack-detection rules, and model policy rationale
 
 ### Test Generation
 - **[WORKFLOWS-COMPARISON.md](docs/WORKFLOWS-COMPARISON.md)** — Compare AEM vs Spring Boot agents
@@ -346,12 +390,12 @@ ai-agent/
 │   └── code-scan.js                                   # Multi-agent code scan, headless/batch
 ├── agents/
 │   ├── vbrd-to-proofhub.md                            # VBRD → ProofHub translation
-│   ├── code-scan-orchestrator.md                      # Clone/branch/detect router (haiku)
-│   ├── java-springboot-analyzer.md                    # Backend security review (opus)
+│   ├── code-scan-orchestrator.md                      # Clone/branch/detect router (opus planning)
+│   ├── java-springboot-analyzer.md                    # Backend security review (sonnet execution)
 │   ├── aem-htl-analyzer.md                            # HTL/Sightly XSS + authoring review (sonnet)
 │   ├── eds-blocks-analyzer.md                         # EDS blocks CWV + DOM review (sonnet)
 │   ├── js-react-analyzer.md                           # React correctness/security review (sonnet)
-│   └── css-scss-analyzer.md                           # CSS/SCSS architecture review (haiku)
+│   └── css-scss-analyzer.md                           # CSS/SCSS architecture review (sonnet)
 ├── skills/
 │   └── code-scan/
 │       └── SKILL.md                                   # Interactive code-scan entry point
@@ -379,7 +423,7 @@ ai-agent/
 │   ├── AEM-UNIT-TEST-CASES-OPTIMIZATIONS.md           # AEM technical deep-dive
 │   ├── AEM-UNIT-TEST-CASES-BEFORE-AFTER.md            # AEM before/after
 │   ├── AEM-QUALITY-GATE-GUIDE.md                      # Quality Gate complete guide
-│   └── CODE-SCAN-GUIDE.md                             # Code-scan pipeline + model tiering
+│   └── CODE-SCAN-GUIDE.md                             # Code-scan pipeline + model policy
 ├── examples/
 │   ├── sample-config.json                             # AEM test generation examples
 │   ├── spring-boot-examples.json                      # Spring Boot test examples
@@ -402,8 +446,7 @@ ai-agent/
 - Clone, branch checkout, stack detection, and CSV tracker generation spend **zero LLM tokens**
   (pure shell/Python, see [CODE-SCAN-GUIDE.md](docs/CODE-SCAN-GUIDE.md)).
 - A repo only pays for the analyzer agents whose stack is actually detected in it.
-- Model tier scales with blast radius, not file count: Opus only for the backend, Haiku for the
-  cheapest-checklist/lowest-severity-ceiling domain (CSS).
+- Model policy is deterministic: Opus for planning/orchestration, Sonnet for execution/review.
 
 ### Permission Gates
 - User controls expensive operations
