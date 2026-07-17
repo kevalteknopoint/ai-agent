@@ -62,9 +62,21 @@ by its `name:` frontmatter) or as the `agentType` a workflow script dispatches t
 | `js-react-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | React/JS: correctness, XSS, hooks misuse, performance, architecture. |
 | `css-scss-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | CSS/SCSS: specificity, architecture, accessibility, performance. |
 | `vbrd-to-proofhub` | Sonnet | Read, Write, Edit, Bash, Grep, Glob, WebFetch | Translates a Visual BRD Excel workbook into Jira-grade ProofHub tasklists/tasks (idempotent sync keyed on Component ID). |
+| `tech-architecture-doc` | Opus | Read, Write, Edit, Bash, Grep, Glob, WebFetch | Asks which repos + branches make up a client platform, then reconstructs the **cross-repo** architecture from source and writes an evidence-based Technical Architecture Document (C4 context/container/component, integration, sequence, deployment, security, data-flow, ER, CI/CD diagrams + risks + target state). Stack is discovered, never assumed. |
 
 The five analyzer agents (`java-springboot-analyzer` through `css-scss-analyzer`) are dispatched
 by the `code-scan` skill/workflow below — you rarely invoke them standalone, though you can.
+
+`vbrd-to-proofhub` and `tech-architecture-doc` are **standalone** — invoked directly by name,
+not dispatched by any workflow. They install to `~/.claude` (see
+[install-standalone-agents.sh](#2-wiring-it-into-claude-code--making-it-invokable-from-anywhere))
+so they work from any directory, not just repos nested under `project-source/`.
+
+**`tech-architecture-doc` vs `code-scan`:** `code-scan` reviews ONE repo for code defects and
+writes findings into that repo's `analysis/`. `tech-architecture-doc` reviews the **joins
+between several repos** (which consumer calls which gateway route which service which table)
+and writes a document. Different question, different output — they compose well: scan for
+defects, document for architecture.
 
 ### Model policy (global)
 
@@ -153,6 +165,23 @@ an explicit path passed at invocation time (see each agent's "Input contract" / 
 `ai-agent-repo` argument) — so the installed copies keep working correctly no matter where the
 *scanned* repo lives, as long as this toolkit repo itself stays at a stable path.
 
+**Standalone agents install machine-wide instead.** `vbrd-to-proofhub` and
+`tech-architecture-doc` aren't part of the code-scan system and are used from repos that don't
+live under `project-source/` (e.g. `ai-initiative/presales`, client repos in arbitrary
+locations). `project-source/.claude` wouldn't cover those, so they go to `~/.claude` — the one
+directory Claude Code merges in regardless of cwd:
+
+```bash
+./scripts/install-standalone-agents.sh
+# or: ./scripts/install-standalone-agents.sh /path/to/some/.claude
+```
+
+Same rules as above: it copies, and installed copies don't auto-update — **re-run it after
+editing `agents/tech-architecture-doc.md` or `agents/vbrd-to-proofhub.md`**, then start a fresh
+session (agents are read at session start). `tech-architecture-doc` takes the same
+`aiAgentRepo` argument as the analyzers so its installed copy can find
+`scripts/clone_or_update.sh` and `scripts/detect_stack.sh`.
+
 If you'd rather work from inside this repo directly instead of installing anywhere: `cd ai-agent
 && claude`, then invoke by name (`/code-scan`, or ask for the skill in conversation) — no install
 needed, but only works from this directory.
@@ -166,6 +195,7 @@ scattering them across the filesystem:
 |---|---|---|
 | `aem-unit-test-cases`, `spring-boot-unit-test-cases`, `aem-quality-gate` | `/Users/kevaljoshi/Documents/project-source/project-unit-test cases/repos` | `args.baseDir` |
 | `code-scan` (skill or workflow) | `<this-repo>/repos` | `args.baseDir` (workflow) or say a different location when the skill asks |
+| `tech-architecture-doc` (agent) | `<this-repo>/repos` — reuses `clone_or_update.sh`, so several client repos land side by side | `baseDir` input, or point it at existing local clones |
 
 `code-scan` additionally writes its output **inside the scanned repo itself** — see
 [Output locations](#output-locations) below, not into this toolkit.
@@ -193,6 +223,21 @@ scattering them across the filesystem:
   tracker (opens directly in Excel/Numbers/Sheets — no dependency to install). `analysis/` is a
   plain folder in the scanned repo, not gitignored by this toolkit — add it to *that* repo's own
   `.gitignore` if you don't want it committed there.
+- **Tech Architecture Doc** (`tech-architecture-doc`): spans several repos, so its output can't
+  live inside any one of them. Defaults to `<this-repo>/output/tech-architecture/<client-slug>/`
+  (**git-ignored** — these are client-confidential deliverables; never commit them here).
+  Override via the `outDir` input — presales engagements usually point it at
+  `~/Documents/Projects/ai-initiative/presales-doc/tech-architecture/<client-slug>/`, matching
+  that repo's convention for generated artefacts. Contents:
+  ```
+  <outDir>/
+    technical-architecture.md   # the document (diagrams embedded)
+    evidence-register.csv       # every finding → repo, commit, file path, confidence
+    unresolved.md               # references that never resolved (usually external systems)
+    inventory/                  # repos · endpoints · consumer-calls · integrations · tables (.tsv)
+    diagrams/                   # *.mmd sources + rendered *.svg
+  ```
+  `evidence-register.csv` is the source of truth: every arrow on every diagram is a row in it.
 
 ## Choosing which one to run
 
@@ -203,6 +248,10 @@ scattering them across the filesystem:
 
 **Want a deep, security-first code review (Java/Spring Boot, AEM HTL, EDS, React, or CSS —
 whichever the repo actually contains)?** → `code-scan`
+
+**Need an evidence-based technical architecture document across multiple repos?** →
+`tech-architecture-doc` (invoke the agent directly; it reconstructs cross-repo integrations,
+diagrams, and deployment/integration flows)
 
 **Need to turn a Visual BRD spreadsheet into ProofHub tasks?** → `vbrd-to-proofhub` (invoke the
 agent directly; it's not part of a workflow)
@@ -389,6 +438,7 @@ ai-agent/
 │   ├── aem-quality-gate.js                            # Quality analysis
 │   └── code-scan.js                                   # Multi-agent code scan, headless/batch
 ├── agents/
+│   ├── tech-architecture-doc.md                       # Multi-repo architecture doc + diagrams (opus)
 │   ├── vbrd-to-proofhub.md                            # VBRD → ProofHub translation
 │   ├── code-scan-orchestrator.md                      # Clone/branch/detect router (opus planning)
 │   ├── java-springboot-analyzer.md                    # Backend security review (sonnet execution)
@@ -403,7 +453,8 @@ ai-agent/
 │   ├── clone_or_update.sh                             # Deterministic clone/checkout/pull
 │   ├── detect_stack.sh                                # Deterministic tech-stack detector
 │   ├── build_issues_csv.py                            # JSON findings → csv tracker (stdlib only)
-│   └── install-global.sh                              # Installs code-scan into a shared .claude/ dir
+│   ├── install-global.sh                              # Installs code-scan into a shared .claude/ dir
+│   └── install-standalone-agents.sh                   # Installs standalone agents into ~/.claude
 ├── quality-gate/                                      # Quality Gate Toolkit
 │   ├── package.json                                   # Frontend tools (ESLint, Stylelint)
 │   ├── rules-manifest.json                            # Master rule catalog
@@ -429,7 +480,8 @@ ai-agent/
 │   ├── spring-boot-examples.json                      # Spring Boot test examples
 │   ├── quality-gate-examples.json                     # Quality Gate examples
 │   └── code-scan-examples.json                        # Code-scan examples
-└── repos/                                              # Git-ignored — where scanned/tested repos get cloned
+├── repos/                                              # Git-ignored — where scanned/tested repos get cloned
+└── output/                                             # Git-ignored — tech-architecture-doc deliverables
 ```
 
 ## Key Optimizations

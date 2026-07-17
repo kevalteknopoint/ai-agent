@@ -64,8 +64,12 @@ and you run an **idempotent enhancement sync** keyed on Component ID.
 - **Screenshots** are embedded PNGs referenced by the sheet's drawing XML
   (`xl/drawings/drawingN.xml`, `oneCellAnchor`, anchored at col 0 at the block's start row),
   NOT loadable via openpyxl. Extract them by parsing the drawing XML → `xl/media/imageN.png`.
-  NOTE: the numbered marker badges are Excel VML overlays and are **not** in the PNGs — so
-  attach the full workbook at project level and map fields by marker in the ticket text.
+  NOTE: the numbered marker badges are Excel VML overlays and are **not** in the PNGs. So the
+  parser **burns the marker onto each crop**: a red badge labelled with the block's marker
+  (e.g. `A1`) is composited into the top-left corner via Pillow before the PNG is attached, so
+  each attachment is self-describing. Also attach the full workbook at project level and map
+  fields by marker in the ticket text. (`service.annotate_screenshot(png, marker)` does the
+  overlay; it degrades to the raw PNG if Pillow is missing or the bytes aren't a valid image.)
 
 ### Standalone parse (when the backend module isn't available)
 
@@ -73,7 +77,9 @@ Run Python via Bash (`openpyxl` for the cell grid + `zipfile`+ElementTree for th
 map sheet → `xl/worksheets/_rels/sheetN.xml.rels` → `xl/drawings/drawingN.xml`; for each
 sheet find header rows (a cell == `"Component ID"`), read label→column from that row, collect
 field rows until the next header/blank run, and correlate each image (anchor row) to the block
-whose header row is the largest at/below it (± a few rows). Emit one crop PNG per block.
+whose header row is the largest at/below it (± a few rows). Emit one crop PNG per block, then
+burn the block's marker onto it as a corner badge (Pillow: rounded red rectangle + white text)
+so the attached screenshot shows which marker it maps to.
 
 ## Ticket output (per component) — Jira-grade
 

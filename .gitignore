@@ -3,6 +3,11 @@ project-unit-test\ cases/
 /repos/
 /repos/**
 
+# Generated client deliverables (tech-architecture-doc). Client-confidential —
+# never commit into this toolkit repo.
+/output/
+/output/**
+
 # IDE
 .vscode/
 .idea/
