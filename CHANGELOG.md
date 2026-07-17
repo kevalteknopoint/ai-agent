@@ -2,6 +2,90 @@
 
 All notable changes to this AI automation toolkit are documented in this file.
 
+## [1.5.0] - 2026-07-17
+
+### Added
+- **`tech-architecture-doc` — column-level database schema diagrams.** The diagram set's
+  former "ER diagram" step only drew entity relationships; it now requires full column-level
+  detail (name, type, nullable, PK, FK target, unique, index) for every table, extracted
+  technology-agnostically:
+  - **Priority 1 — DDL/migrations** when present: Flyway, Liquibase, Alembic, Prisma
+    `schema.prisma`, Rails `db/schema.rb`, EF Core `Migrations/`, raw `.sql`.
+  - **Priority 2 — ORM entity mappings** when no migrations are in scope: JPA/Hibernate
+    (`@Entity`/`@Column`/`@JoinColumn`), Django models, SQLAlchemy, TypeORM, Sequelize,
+    ActiveRecord, EF Core attributes/Fluent API, GORM struct tags, Doctrine. Capped at Medium
+    confidence unless corroborated by DDL.
+  - New `inventory/tables.tsv` spec: one row per **column**, not per table.
+  - Large schemas (>25–30 tables) split into one domain-overview relationship diagram plus
+    per-domain diagrams with full Mermaid `erDiagram` attribute blocks — never one wall-sized
+    diagram.
+  - Phase 2's stack-detection table gained an ORM-mapping row so the right extraction pattern
+    is picked per language rather than assumed to be Java/Spring.
+
+## [1.4.0] - 2026-07-17
+
+### Added
+- **Rescan mode for `code-scan` — re-verify prior findings instead of re-reviewing the repo**
+  - Point `code-scan` at a repo that already has an `analysis/` folder and it now re-checks the
+    findings already on record against the current code, writing each one's fix status back into
+    the **same** `analysis/<domain>-analysis-findings.json` and `analysis/<domain>-analysis-issues.csv`.
+  - Reads only the files carrying a known finding, not the codebase — a fraction of a full scan's cost.
+  - Explicit trade: a rescan finds **no new issues**. It answers "is this fixed", not "what's wrong now".
+  - Statuses: `Open`, `Fixed`, `Partially Fixed`, `Not Applicable` (the code carrying it is gone),
+    `Unverifiable` (routed to a human, never silently closed).
+  - Per-issue provenance: `statusDetail` (evidence), `verifiedFile`/`verifiedLine` (where it lives now,
+    kept separate from the original `file`/`line`), `firstSeenCommit`, `lastVerifiedCommit`/`Date`,
+    `fixedInCommit`. A `scanHistory` entry is appended to the findings JSON per run.
+
+- **`agents/code-scan-verifier.md`** (Sonnet) — verifies one batch of prior findings and returns a
+  verdict per issue. Deliberately narrow: no new-issue discovery, no code edits, no writes to the
+  findings JSON or CSV.
+
+- **Three deterministic scripts (stdlib-only, zero LLM tokens)**
+  - `scripts/plan_verification.py` — detects prior analysis, filters out terminal issues, and batches
+    the rest by file into a plan at `analysis/.verify/plan.json`. Purges stale verdicts.
+  - `scripts/apply_verdicts.py` — merges verdicts into the findings JSON and rebuilds the CSV from the
+    same issue list, so the two can't drift.
+  - `scripts/build_rescan_summary.py` — renders `analysis/rescan-summary.md` (cross-domain status,
+    regressions, still-open list).
+
+- **Workflow args**: `mode` (`auto` | `full` | `rescan`, default `auto`), `recheckFixed`, `batchSize`.
+  `mode:"rescan"` with no prior analysis fails loudly rather than silently spending a full-scan budget.
+
+### Changed
+- **`workflows/code-scan.js`** — added `Rescan Verification` and `Status Update` phases, mode
+  resolution, and a per-domain verify→merge pipeline (each domain merges as soon as its own batches
+  land; no cross-domain barrier).
+- **`agents/code-scan-orchestrator.md`** — now also runs `plan_verification.py` and returns
+  `priorAnalysis`. It reports what's on disk; the caller picks the mode.
+- **`skills/code-scan/SKILL.md`** — offers full-scan vs rescan when prior analysis exists, and leads
+  the rescan summary with the fixed/open counts.
+- **`scripts/build_issues_csv.py`** — added the status columns (`Status`, `Status Detail`,
+  `Verified File`, `Verified Line`, `First Seen`, `Last Verified`, `Last Verified Commit`,
+  `Fixed In Commit`); rows now sort open-work-first, then severity desc, then file. Exposes
+  `write_csv()`/`normalize_status()` for reuse. **Backward compatible**: a findings JSON with no
+  status fields still builds, with every issue defaulting to `Open`.
+- **`scripts/install-global.sh`** — installs `code-scan-verifier`.
+
+### Security
+- Ambiguity resolves toward `Open`, never `Fixed` — a wrong "Fixed" silently closes a live security
+  finding. The guarantees:
+  - `normalize_status()` maps any present-but-unrecognized status to `Unverifiable` and a missing one
+    to `Open`, so a malformed verdict cannot close an issue.
+  - An issue with no verdict (crashed batch, unreadable verdict file) keeps its previous status and is
+    reported as `notVerified` — silence is never read as "fixed".
+  - A duplicated issue ID is excluded from verification and left untouched: one verdict cannot be
+    routed to two issues without closing one on the other's evidence.
+  - A malformed verdict file is reported in `badVerdictFiles` and skipped rather than being fatal, so
+    one bad batch can't discard every other batch's good verdicts.
+  - A `Fixed` issue found present again clears its `fixedInCommit` and is surfaced as a regression.
+  - Everything excluded from a run (terminal, duplicate, ID-less, unparseable domain) is logged. A
+    rescan that verified 38 of 42 findings never reports as if it covered all 42.
+- The rescan planner and the verdict merger share `normalize_status()`/`issue_key()`/`TERMINAL_STATUSES`
+  rather than each defining their own. Independent copies had already drifted: the planner's raw-string
+  terminal check didn't recognize `"resolved"` as Fixed while the merger did, which re-verified the
+  issue every run and then reported a phantom regression the moment a verifier said Open.
+
 ## [1.3.0] - 2026-07-15
 
 ### Changed

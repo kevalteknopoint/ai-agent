@@ -1,8 +1,15 @@
 {
   "comment": "Sample configuration for the code-scan workflow (workflows/code-scan.js). For interactive use (asks for URL + branch conversationally), use the 'code-scan' skill instead — these examples are for the headless/batch invocation.",
 
+  "modes": {
+    "comment": "mode picks between a full analysis and a cheap rescan of the findings already on record. Default is 'auto'.",
+    "auto": "Rescan if the repo already has an analysis/ folder with pending findings; otherwise run a full scan. The default.",
+    "full": "Always run the full analysis, ignoring any prior analysis/. Discovers new issues and rewrites the reports — which also discards the fix statuses a rescan recorded, since findings are regenerated from scratch.",
+    "rescan": "Only re-verify the findings already on record and write their status back to the same JSON/CSV. Finds NO new issues. Fails loudly rather than falling back to a full scan when there is no prior analysis to rescan."
+  },
+
   "example_1_single_repo": {
-    "description": "Scan a single repo on its main branch",
+    "description": "Scan a single repo on its main branch. A first run has no analysis/ folder, so auto mode runs a full scan.",
     "repoUrl": "https://github.com/your-org/aem-project.git",
     "branch": "main"
   },
@@ -29,5 +36,54 @@
     "repoUrl": "https://github.com/your-org/aem-project.git",
     "branch": "main",
     "baseDir": "/Users/kevaljoshi/Documents/code-scans/repos"
+  },
+
+  "example_5_rescan": {
+    "description": "Re-verify the findings from a previous scan against the latest code and write Fixed/Open/Partially Fixed status back into the same analysis/*-analysis-findings.json and *-analysis-issues.csv. Reads only the files carrying a known finding, so it costs a fraction of a full scan.",
+    "mode": "rescan",
+    "repoUrl": "https://github.com/your-org/aem-project.git",
+    "branch": "main"
+  },
+
+  "example_6_rescan_ci_sprint_check": {
+    "description": "Typical CI/scheduled use: after each sprint, recheck every tracked repo's open findings and refresh the trackers. trustedMode skips the gates; batchSize tunes how many issues each verifier agent handles at once (default 12 — lower it for dense files, raise it for shallow findings).",
+    "mode": "rescan",
+    "trustedMode": true,
+    "batchSize": 10,
+    "repos": [
+      { "repoUrl": "https://github.com/your-org/aem-backend.git", "branch": "main" },
+      { "repoUrl": "https://github.com/your-org/eds-storefront.git", "branch": "main" }
+    ]
+  },
+
+  "example_7_rescan_regression_check": {
+    "description": "Rescans skip issues already marked Fixed/Not Applicable — re-reading a deleted file every run costs tokens for no signal. recheckFixed re-verifies those too, catching a fix that got reverted. Worth running before a release, not every sprint.",
+    "mode": "rescan",
+    "recheckFixed": true,
+    "repoUrl": "https://github.com/your-org/aem-project.git",
+    "branch": "release/2026.3"
+  },
+
+  "example_8_force_full_rescan_of_scanned_repo": {
+    "description": "Force a fresh full analysis of a repo that already has an analysis/ folder — the right call after a large merge or refactor, where a rescan would faithfully verify the old findings while missing everything the new code introduced. Note this regenerates findings from scratch, discarding recorded fix statuses.",
+    "mode": "full",
+    "repoUrl": "https://github.com/your-org/aem-project.git",
+    "branch": "main"
+  },
+
+  "outputs": {
+    "comment": "Everything lands in analysis/ at the root of the CLONED repo (<baseDir>/<repoName>/analysis/), never inside this toolkit.",
+    "full_scan": [
+      "analysis/<domain>-analysis-report.md — human-readable, severity-ranked",
+      "analysis/<domain>-analysis-findings.json — machine-readable, feeds the tracker",
+      "analysis/<domain>-analysis-issues.csv — the tracker (opens in Excel)"
+    ],
+    "rescan": [
+      "analysis/<domain>-analysis-findings.json — same file, updated in place: each issue gains status, statusDetail, verifiedFile/verifiedLine, firstSeenCommit, lastVerifiedCommit/Date, fixedInCommit; a scanHistory entry is appended per run",
+      "analysis/<domain>-analysis-issues.csv — same file, rebuilt with the status columns, sorted open-work-first",
+      "analysis/rescan-summary.md — cross-domain status table, regressions, still-open list",
+      "analysis/.verify/ — scratch: the batch plan + per-batch verdicts (audit trail; purged and rewritten at the start of each rescan)"
+    ],
+    "statuses": "Open · Fixed · Partially Fixed · Not Applicable (the code carrying it no longer exists) · Unverifiable (the verifier couldn't tell — routed to a human, never silently closed)"
   }
 }

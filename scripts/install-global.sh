@@ -2,9 +2,9 @@
 # install-global.sh [target-claude-dir]
 #
 # Installs the code-scan system (5 analyzer agents + the router agent + the
-# workflow + the skill) into a Claude Code project-scope `.claude/`
-# directory so it's invokable from ANY project nested under it — not just
-# from inside this toolkit repo.
+# rescan verifier + the workflow + the skill) into a Claude Code project-scope
+# `.claude/` directory so it's invokable from ANY project nested under it —
+# not just from inside this toolkit repo.
 #
 # Why this location and not this repo's own agents/workflows/skills dirs:
 # Claude Code discovers agents/workflows/skills by walking UP from the
@@ -27,6 +27,7 @@ TARGET="${1:-/Users/kevaljoshi/Documents/project-source/.claude}"
 mkdir -p "$TARGET/agents" "$TARGET/workflows" "$TARGET/skills/code-scan"
 
 cp "$SRC/agents/code-scan-orchestrator.md" "$TARGET/agents/"
+cp "$SRC/agents/code-scan-verifier.md" "$TARGET/agents/"
 cp "$SRC/agents/java-springboot-analyzer.md" "$TARGET/agents/"
 cp "$SRC/agents/aem-htl-analyzer.md" "$TARGET/agents/"
 cp "$SRC/agents/eds-blocks-analyzer.md" "$TARGET/agents/"
@@ -36,11 +37,12 @@ cp "$SRC/workflows/code-scan.js" "$TARGET/workflows/"
 cp "$SRC/skills/code-scan/SKILL.md" "$TARGET/skills/code-scan/"
 
 echo "Installed into $TARGET:"
-echo "  agents:    code-scan-orchestrator, java-springboot-analyzer, aem-htl-analyzer,"
-echo "             eds-blocks-analyzer, js-react-analyzer, css-scss-analyzer"
+echo "  agents:    code-scan-orchestrator, code-scan-verifier, java-springboot-analyzer,"
+echo "             aem-htl-analyzer, eds-blocks-analyzer, js-react-analyzer, css-scss-analyzer"
 echo "  workflow:  code-scan.js"
 echo "  skill:     code-scan"
 echo ""
 echo "New Claude Code sessions started from anywhere under $(dirname "$TARGET") will now see these."
-echo "This toolkit repo's absolute path ($SRC) is what analyzer agents use to find"
-echo "scripts/build_issues_csv.py — that still works regardless of where the scan target repo lives."
+echo "This toolkit repo's absolute path ($SRC) is what the agents use to find the shared"
+echo "scripts/ (build_issues_csv.py, plan_verification.py, apply_verdicts.py,"
+echo "build_rescan_summary.py) — that still works regardless of where the scan target lives."

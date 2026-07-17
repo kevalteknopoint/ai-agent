@@ -24,6 +24,11 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
+# Python — scripts/ import each other (apply_verdicts imports build_issues_csv),
+# so running them leaves bytecode behind
+__pycache__/
+*.py[cod]
+
 # Logs
 logs/
 *.log

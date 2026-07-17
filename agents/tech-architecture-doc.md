@@ -5,8 +5,9 @@ description: >-
   across MULTIPLE repositories and produces an evidence-based Technical Architecture /
   Technical Implementation Document with C4-style context & container diagrams, component
   diagrams, system integration architecture, sequence & flow charts, deployment topology,
-  security/trust-boundary and data-flow diagrams, ER diagrams, CI/CD flow, API & integration
-  inventories, risks and a target-state proposal. Use when asked to "create a technical
+  security/trust-boundary and data-flow diagrams, column-level database schema (ER) diagrams,
+  CI/CD flow, API & integration inventories, risks and a target-state proposal. Use when asked
+  to "create a technical
   architecture / implementation document", "document the client's architecture from the
   repos", "generate architecture diagrams from source code", "reverse-engineer the system
   integration architecture", or to refresh an existing architecture doc against newer
@@ -159,7 +160,8 @@ baseline, then extend by hand:
 | `pubspec.yaml` ⇒ Flutter · `AndroidManifest.xml` ⇒ Android · `*.xcodeproj`/`Podfile` ⇒ iOS | mobile flavour |
 | `go.mod` · `pyproject.toml`/`requirements.txt` · `*.csproj` · `Gemfile` · `composer.json` · `Cargo.toml` | Go · Python · .NET · Ruby · PHP · Rust |
 | JSON with `listen_path` + `target_url` / `api_id`, `tyk.conf`, `x-tyk-gateway` in OAS | Tyk gateway |
-| `db/migration/V*__*.sql` ⇒ Flyway · `changelog*.xml` ⇒ Liquibase · `alembic/` · `prisma/schema.prisma` | schema source of truth |
+| `db/migration/V*__*.sql` ⇒ Flyway · `changelog*.xml` ⇒ Liquibase · `alembic/` · `prisma/schema.prisma` | schema source of truth (DDL — highest confidence) |
+| `@Entity`/`@Table`/`@Column`/`@Id`/`@OneToMany`/`@ManyToOne`/`@JoinColumn` (Java/Kotlin JPA-Hibernate) · Django `models.Model` field declarations · SQLAlchemy `Column(...)`/`relationship(...)` · TypeORM `@Entity()`/`@Column()`/`@OneToMany()` · Sequelize `.define(`/`sequelize-typescript` decorators · Rails `ActiveRecord::Base` + `db/schema.rb` · .NET EF Core `DbSet<T>`/`[Table]`/`[Column]`/`[ForeignKey]` or Fluent `OnModelCreating` · Go GORM struct tags (`` `gorm:"..."` ``) · PHP Doctrine `#[ORM\Entity]`/`#[ORM\Column]` | ORM entity mapping — schema source when no DDL/migrations are in scope (Medium confidence unless corroborated by DDL) |
 | `Dockerfile` · `docker-compose*.yml` · `kind:`+`apiVersion:` YAML · `Chart.yaml` · `*.tf` | packaging / deployment |
 | `.github/workflows/` · `.gitlab-ci.yml` · `Jenkinsfile` · `azure-pipelines.yml` · `.cloudmanager/` | CI/CD |
 
@@ -210,6 +212,15 @@ lives in the **joins**. Build two tables, then intersect them:
   queries.)
 - `inventory/consumer-calls.tsv` — **consumers**: every outbound call.
   `repo · file · method · url-expression · base-url-source`
+- `inventory/tables.tsv` — **database schema**, one row per column, extracted from whichever
+  source is actually present (DDL/migration wins over ORM mapping when both exist — record
+  which one you used):
+  `table · column · type · nullable · pk · fk-references(table.column) · unique · indexed ·
+  source(ddl-file|orm-entity-class) · repo · commit · locator`
+  Build this for **every language** in scope, not just Java/Spring — the ORM/migration row in
+  the Phase 2 table lists the patterns to grep per stack. If a repo has entities/models but no
+  migrations, say so explicitly; cardinalities inferred from ORM annotations alone (no
+  migration corroboration) are capped at Medium confidence.
 
 **Resolve base URLs** from env/config per environment (`application-*.yml`, `.env*`,
 `*.properties`, k8s ConfigMaps, build flavours, OSGi `.cfg.json`). A call to
@@ -288,8 +299,40 @@ Diagram set (scale to `depth`):
    Highlight unclear or unprotected boundaries.
 8. **Data flow** — Level 0 and Level 1, classifying flows (PII / credentials / tokens /
    financial / documents / public content / audit).
-9. **ER diagram** — from actual DDL/migrations/entity mappings. Large schema → one high-level
-   domain diagram + per-domain detail diagrams. Never one 80-table wall.
+9. **Database schema diagram** — column-level, not just entity relationships. Extraction
+   priority, and say which one you used per table:
+   a. **DDL/migrations as source of truth** when present: Flyway `V*__*.sql`, Liquibase
+      changelog, Alembic versions, Django migrations, Rails `db/schema.rb`, Prisma
+      `schema.prisma`, EF Core `Migrations/`, raw `.sql` — read `CREATE TABLE` directly for
+      column name, type, nullability, PK, FK, unique, index.
+   b. **ORM entity mappings** when no migrations are in scope, in whatever language the repo
+      actually uses (see the Phase 2 ORM row) — Java/Kotlin JPA-Hibernate, Django, SQLAlchemy,
+      TypeORM, Sequelize, ActiveRecord, EF Core, GORM, Doctrine, or equivalent. Do not skip this
+      diagram just because there's no `db/migration/` folder — a Spring Boot (or any other)
+      service with `@Entity` classes and no committed DDL still has a schema; extract it from
+      the annotations/decorators and mark it accordingly.
+   c. If both exist and disagree, DDL wins for the diagram and the drift is itself a finding.
+   d. If truly nothing schema-shaped is found in any repo (no DDL, no ORM, no models), state
+      that plainly instead of omitting the diagram silently.
+
+   Render with Mermaid `erDiagram` attribute blocks, not bare entity boxes:
+   ```
+   erDiagram
+       CUSTOMER {
+           bigint id PK
+           varchar email UK
+           varchar policy_id FK
+       }
+       POLICY {
+           bigint id PK
+           varchar policy_number UK
+       }
+       CUSTOMER ||--o{ POLICY : "owns"
+   ```
+   Large schema (>25–30 tables) → one high-level domain-grouped relationship diagram (no column
+   detail) + per-domain diagrams with full column attributes. Never one 80-table wall. Every
+   FK/relationship traces to an `inventory/tables.tsv` row citing the exact DDL line or
+   annotation.
 10. **CI/CD & release flow** — branch strategy, gates, scans, artefacts, promotion, DB migration
     execution, rollback.
 
@@ -329,10 +372,11 @@ dependencies · risks · sequence.
 
 `technical-architecture.md` sections, in order: executive summary · scope & repos analysed (with
 SHAs) · methodology · repository inventory · current-state summary · context · container ·
-components · integration · deployment · security · data flow · ER · CI/CD · sequence flows · API
-inventory · integration inventory · database inventory · security-control inventory ·
-observability · risks · recommendations · target state · dead/deprecated code · assumptions &
-open questions · evidence register · appendix (key file references).
+components · integration · deployment · security · data flow · database schema (ER, column-level)
+· CI/CD · sequence flows · API inventory · integration inventory · database inventory ·
+security-control inventory · observability · risks · recommendations · target state ·
+dead/deprecated code · assumptions & open questions · evidence register · appendix (key file
+references).
 
 One file; split into `sections/` only past ~2500 lines.
 

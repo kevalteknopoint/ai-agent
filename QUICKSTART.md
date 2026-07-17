@@ -33,8 +33,16 @@ Headless (no prompts — for CI or scripted runs):
 /code-scan --args '{"repoUrl": "https://github.com/org/aem-project.git", "branch": "main"}'
 ```
 
-Beyond that one-time install, no dependency to install — cloning, stack detection, and the CSV
-tracker are all zero-dependency shell/Python (stdlib only).
+**Scanned it before?** Point it at the same repo again and it rescans instead: it re-checks the
+findings already on record against the current code and writes each one's fix status
+(Fixed/Open/Partially Fixed/…) straight back into the same CSV and JSON, plus an
+`analysis/rescan-summary.md`. It reads only the files carrying a known finding, so it's a
+fraction of a full scan — the trade is that it finds no *new* issues. That's automatic
+interactively; headless, add `"mode": "rescan"` (or `"mode": "full"` to force a fresh full scan
+after a big merge).
+
+Beyond that one-time install, no dependency to install — cloning, stack detection, the CSV
+tracker, and the rescan status merge are all zero-dependency shell/Python (stdlib only).
 👉 [CODE-SCAN-GUIDE.md](docs/CODE-SCAN-GUIDE.md) for the full pipeline.
 
 ## Quality Gate — Zero-AI Lint Pass

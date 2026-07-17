@@ -55,17 +55,19 @@ by its `name:` frontmatter) or as the `agentType` a workflow script dispatches t
 
 | Agent | Model | Tools | What it does |
 |---|---|---|---|
-| `code-scan-orchestrator` | Opus | Read, Bash, Grep, Glob | Clones/updates a repo+branch and runs deterministic tech-stack detection; returns which analyzer agents apply. No code review. |
+| `code-scan-orchestrator` | Opus | Read, Bash, Grep, Glob | Clones/updates a repo+branch, runs deterministic tech-stack detection, and checks for a prior `analysis/` folder; returns which analyzer agents apply and whether a cheap rescan is possible. No code review. |
+| `code-scan-verifier` | Sonnet | Read, Grep, Glob, Bash, Write | Rescan only: re-checks a batch of findings from a previous scan against the current code and returns Fixed/Open/Partially Fixed/Not Applicable/Unverifiable per issue. Doesn't hunt for new issues. |
 | `java-springboot-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | Backend security-first review: injection, auth, secrets, concurrency, N+1 queries, resource leaks. |
 | `aem-htl-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | AEM Sightly/HTL templates: XSS context handling, Sling Model binding, authoring/edit-mode behavior. |
 | `eds-blocks-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | Edge Delivery Services blocks: Core Web Vitals, DOM-first patterns, vanilla JS conventions. |
 | `js-react-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | React/JS: correctness, XSS, hooks misuse, performance, architecture. |
 | `css-scss-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | CSS/SCSS: specificity, architecture, accessibility, performance. |
 | `vbrd-to-proofhub` | Sonnet | Read, Write, Edit, Bash, Grep, Glob, WebFetch | Translates a Visual BRD Excel workbook into Jira-grade ProofHub tasklists/tasks (idempotent sync keyed on Component ID). |
-| `tech-architecture-doc` | Opus | Read, Write, Edit, Bash, Grep, Glob, WebFetch | Asks which repos + branches make up a client platform, then reconstructs the **cross-repo** architecture from source and writes an evidence-based Technical Architecture Document (C4 context/container/component, integration, sequence, deployment, security, data-flow, ER, CI/CD diagrams + risks + target state). Stack is discovered, never assumed. |
+| `tech-architecture-doc` | Opus | Read, Write, Edit, Bash, Grep, Glob, WebFetch | Asks which repos + branches make up a client platform, then reconstructs the **cross-repo** architecture from source and writes an evidence-based Technical Architecture Document (C4 context/container/component, integration, sequence, deployment, security, data-flow, column-level database schema (ER), CI/CD diagrams + risks + target state). Database schema is extracted from actual DDL/migrations when present, or ORM entity mappings (JPA/Hibernate, Django, SQLAlchemy, TypeORM, EF Core, GORM, etc.) otherwise — technology-agnostic, never a generic template. Stack is discovered, never assumed. |
 
-The five analyzer agents (`java-springboot-analyzer` through `css-scss-analyzer`) are dispatched
-by the `code-scan` skill/workflow below — you rarely invoke them standalone, though you can.
+The five analyzer agents (`java-springboot-analyzer` through `css-scss-analyzer`) plus
+`code-scan-verifier` are dispatched by the `code-scan` skill/workflow below — you rarely invoke
+them standalone, though you can.
 
 `vbrd-to-proofhub` and `tech-architecture-doc` are **standalone** — invoked directly by name,
 not dispatched by any workflow. They install to `~/.claude` (see
@@ -91,7 +93,7 @@ runnable as a slash command with a JSON `--args` payload.
 
 | Workflow | Invocation | What it does |
 |---|---|---|
-| `code-scan` | `/code-scan --args '{...}'` | Clone/update → detect stack → dispatch only the matching analyzer agents, in parallel. Headless counterpart to the `code-scan` skill. |
+| `code-scan` | `/code-scan --args '{...}'` | Clone/update → detect stack → dispatch only the matching analyzer agents, in parallel. If the repo already has an `analysis/` folder, rescans instead: re-verifies the known findings and writes fix status back to the same JSON/CSV (`mode`: `auto`\|`full`\|`rescan`). Headless counterpart to the `code-scan` skill. |
 | `aem-unit-test-cases` | `/aem-unit-test-cases --args '{...}'` | Clone → generate JUnit/Mockito/AEM-Mocks unit tests targeting 80%+ coverage → local Maven build validation → auto-push to a feature branch. |
 | `spring-boot-unit-test-cases` | `/spring-boot-unit-test-cases --args '{...}'` | Same pipeline shape as above, tuned for Spring Boot (JUnit/Mockito/Spring Test). |
 | `aem-quality-gate` | `/aem-quality-gate --args '{...}'` | Rule-driven static analysis — PMD, Checkstyle, ESLint, Stylelint, custom clientlib checks. **Zero LLM tokens for scanning**; optional AI pass only tunes rule thresholds afterward. |
@@ -103,7 +105,7 @@ unlike workflows/agents which run as a single dispatched task.
 
 | Skill | What it does |
 |---|---|
-| `code-scan` | Asks for a GitHub URL (clones if not already present locally), asks for a branch (checks it out, pulls latest), shows the detected stack for confirmation, then dispatches only the applicable analyzer agents. |
+| `code-scan` | Asks for a GitHub URL (clones if not already present locally), asks for a branch (checks it out, pulls latest), shows the detected stack for confirmation, then dispatches only the applicable analyzer agents. On a repo that's been scanned before, offers a rescan instead — re-check the known findings and update their fix status in the same tracker. |
 
 ### Rule-driven toolkit (`quality-gate/`)
 
@@ -120,7 +122,7 @@ workflow above is the thin wrapper that clones a repo and calls this toolkit.
 |---|---|---|
 | Claude Code CLI | everything | `npm install -g @anthropic-ai/claude-code` (or use claude.ai/code) |
 | `git` | everything | usually preinstalled |
-| `python3` | `code-scan`'s CSV tracker | preinstalled on macOS/Linux — **stdlib only, nothing to `pip install`** |
+| `python3` | `code-scan`'s CSV tracker, rescan planning + status merge | preinstalled on macOS/Linux — **stdlib only, nothing to `pip install`** |
 | `mvn` (Maven) | `aem-unit-test-cases`, `spring-boot-unit-test-cases` build validation | required only if you use those two workflows |
 | `node` + `npm` | `aem-quality-gate` | run `cd quality-gate && npm install` once |
 | ProofHub API access | `vbrd-to-proofhub` only | set `PROOFHUB_BASE_URL`, `PROOFHUB_API_KEY`, `PROOFHUB_USER_AGENT` in your environment or a local `.env` — never hardcode these in a prompt or commit them |
@@ -223,6 +225,16 @@ scattering them across the filesystem:
   tracker (opens directly in Excel/Numbers/Sheets — no dependency to install). `analysis/` is a
   plain folder in the scanned repo, not gitignored by this toolkit — add it to *that* repo's own
   `.gitignore` if you don't want it committed there.
+
+  A **rescan** (the default on a repo that already has `analysis/`) writes no new report. It
+  updates `-findings.json` and `-issues.csv` **in place**, adding a `Status` column
+  (Open/Fixed/Partially Fixed/Not Applicable/Unverifiable) plus the evidence and commit
+  provenance behind each verdict, and adds:
+  ```
+  <repoPath>/analysis/
+    rescan-summary.md    # cross-domain status table, regressions, still-open list
+    .verify/             # batch plan + per-batch verdicts (audit trail)
+  ```
 - **Tech Architecture Doc** (`tech-architecture-doc`): spans several repos, so its output can't
   live inside any one of them. Defaults to `<this-repo>/output/tech-architecture/<client-slug>/`
   (**git-ignored** — these are client-confidential deliverables; never commit them here).
@@ -267,10 +279,26 @@ agent directly; it's not part of a workflow)
 - Five specialized reviewers: Java/Spring Boot, AEM Sightly (HTL), EDS blocks, JS/React, CSS/SCSS.
 - Each writes a severity-ranked Markdown report + CSV issue tracker to `analysis/` **inside the
   scanned repo**.
+- Point it at the same repo later and it **rescans** instead: re-checks the findings already on
+  record against the current code and writes each one's fix status back into the same JSON/CSV.
 - Model policy is fixed: Opus for planning/routing, Sonnet for execution analyzers — plus
-  zero-token deterministic clone/detect/tracker-build steps.
+  zero-token deterministic clone/detect/plan/tracker/summary steps.
 - Two entry points: the `code-scan` **skill** (interactive — asks for URL/branch) or the
   `code-scan` **workflow** (headless — pass `repoUrl`/`branch` as args).
+
+### Two modes
+
+| | Full scan | Rescan |
+|---|---|---|
+| Answers | "What's wrong with this code?" | "Which known issues are fixed?" |
+| Runs when | No `analysis/` folder yet, or `mode:"full"` | `analysis/` already there (the default then) |
+| Reads | Every in-scope file | Only files carrying a known finding — much cheaper |
+| Finds new issues | Yes | **No** — that's the trade |
+| Writes | Report + findings JSON + CSV | Status into the *same* JSON + CSV, in place |
+
+`mode` defaults to `auto` and picks for you. Force `mode:"full"` after a release or a big merge,
+where a rescan would faithfully verify the old findings while missing everything the new code
+introduced.
 
 ### Usage
 
@@ -279,7 +307,8 @@ Interactive (a human is present to answer "which repo / which branch"):
 Use the code-scan skill on https://github.com/org/aem-project.git
 ```
 It will ask for the branch, show you the detected stack and which analyzers it plans to run, and
-wait for confirmation before spending the analysis budget.
+wait for confirmation before spending the analysis budget. On a repo it has scanned before, it
+offers the rescan instead — and tells you how many findings are pending.
 
 Headless/batch (CI, scheduled runs, scripted sweeps):
 ```bash
@@ -297,15 +326,26 @@ Or multiple repos in one run:
   ]
 }'
 ```
+Rescan a repo you've already scanned — re-check the known findings and update their status in the
+same tracker:
+```bash
+/code-scan --args '{
+  "mode": "rescan",
+  "repoUrl": "https://github.com/org/aem-project.git",
+  "branch": "main"
+}'
+```
+
 See [examples/code-scan-examples.json](examples/code-scan-examples.json) for more, including
-`trustedMode` (skip confirmation gates) and a custom `baseDir`.
+`trustedMode` (skip confirmation gates), `recheckFixed` (re-verify already-fixed issues to catch
+regressions), `batchSize`, and a custom `baseDir`.
 
 Unlike Quality Gate (rule-engine linting, zero AI), `code-scan` runs up to five domain-expert LLM
 reviewers — but only the ones whose stack is actually detected in the repo, and each on the model
 tier its blast radius warrants.
 
 👉 See [CODE-SCAN-GUIDE.md](docs/CODE-SCAN-GUIDE.md) for the full pipeline, stack-detection rules,
-and the complete model-tiering rationale.
+rescan statuses and design constraints, and the complete model-tiering rationale.
 
 ---
 
