@@ -64,13 +64,14 @@ by its `name:` frontmatter) or as the `agentType` a workflow script dispatches t
 | `css-scss-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | CSS/SCSS: specificity, architecture, accessibility, performance. |
 | `vbrd-to-proofhub` | Sonnet | Read, Write, Edit, Bash, Grep, Glob, WebFetch | Translates a Visual BRD Excel workbook into Jira-grade ProofHub tasklists/tasks (idempotent sync keyed on Component ID). |
 | `tech-architecture-doc` | Opus | Read, Write, Edit, Bash, Grep, Glob, WebFetch | Asks which repos + branches make up a client platform, then reconstructs the **cross-repo** architecture from source and writes an evidence-based Technical Architecture Document (C4 context/container/component, integration, sequence, deployment, security, data-flow, column-level database schema (ER), CI/CD diagrams + risks + target state). Database schema is extracted from actual DDL/migrations when present, or ORM entity mappings (JPA/Hibernate, Django, SQLAlchemy, TypeORM, EF Core, GORM, etc.) otherwise — technology-agnostic, never a generic template. Stack is discovered, never assumed. |
+| `wp-to-eds-migrator` | Sonnet | Read, Write, Edit, Bash, Grep, Glob, WebFetch | Migrates WordPress theme components (Gutenberg/ACF blocks, shortcodes, template partials) into AEM Edge Delivery Services blocks authorable in Universal Editor (XWalk model-driven authoring). Consolidates similar WP blocks into a minimal, variant-driven set — never mechanical 1:1 copies. |
 
 The five analyzer agents (`java-springboot-analyzer` through `css-scss-analyzer`) plus
 `code-scan-verifier` are dispatched by the `code-scan` skill/workflow below — you rarely invoke
 them standalone, though you can.
 
-`vbrd-to-proofhub` and `tech-architecture-doc` are **standalone** — invoked directly by name,
-not dispatched by any workflow. They install to `~/.claude` (see
+`vbrd-to-proofhub`, `tech-architecture-doc`, and `wp-to-eds-migrator` are **standalone** —
+invoked directly by name, not dispatched by any workflow. They install to `~/.claude` (see
 [install-standalone-agents.sh](#2-wiring-it-into-claude-code--making-it-invokable-from-anywhere))
 so they work from any directory, not just repos nested under `project-source/`.
 
@@ -167,8 +168,8 @@ an explicit path passed at invocation time (see each agent's "Input contract" / 
 `ai-agent-repo` argument) — so the installed copies keep working correctly no matter where the
 *scanned* repo lives, as long as this toolkit repo itself stays at a stable path.
 
-**Standalone agents install machine-wide instead.** `vbrd-to-proofhub` and
-`tech-architecture-doc` aren't part of the code-scan system and are used from repos that don't
+**Standalone agents install machine-wide instead.** `vbrd-to-proofhub`, `tech-architecture-doc`,
+and `wp-to-eds-migrator` aren't part of the code-scan system and are used from repos that don't
 live under `project-source/` (e.g. `ai-initiative/presales`, client repos in arbitrary
 locations). `project-source/.claude` wouldn't cover those, so they go to `~/.claude` — the one
 directory Claude Code merges in regardless of cwd:
@@ -179,10 +180,10 @@ directory Claude Code merges in regardless of cwd:
 ```
 
 Same rules as above: it copies, and installed copies don't auto-update — **re-run it after
-editing `agents/tech-architecture-doc.md` or `agents/vbrd-to-proofhub.md`**, then start a fresh
-session (agents are read at session start). `tech-architecture-doc` takes the same
-`aiAgentRepo` argument as the analyzers so its installed copy can find
-`scripts/clone_or_update.sh` and `scripts/detect_stack.sh`.
+editing `agents/tech-architecture-doc.md`, `agents/vbrd-to-proofhub.md`, or
+`agents/wp-to-eds-migrator.md`** — then start a fresh session (agents are read at session start).
+`tech-architecture-doc` takes the same `aiAgentRepo` argument as the analyzers so its installed
+copy can find `scripts/clone_or_update.sh` and `scripts/detect_stack.sh`.
 
 If you'd rather work from inside this repo directly instead of installing anywhere: `cd ai-agent
 && claude`, then invoke by name (`/code-scan`, or ask for the skill in conversation) — no install
@@ -485,7 +486,8 @@ ai-agent/
 │   ├── aem-htl-analyzer.md                            # HTL/Sightly XSS + authoring review (sonnet)
 │   ├── eds-blocks-analyzer.md                         # EDS blocks CWV + DOM review (sonnet)
 │   ├── js-react-analyzer.md                           # React correctness/security review (sonnet)
-│   └── css-scss-analyzer.md                           # CSS/SCSS architecture review (sonnet)
+│   ├── css-scss-analyzer.md                           # CSS/SCSS architecture review (sonnet)
+│   └── wp-to-eds-migrator.md                          # WordPress → AEM EDS block migration (sonnet)
 ├── skills/
 │   └── code-scan/
 │       └── SKILL.md                                   # Interactive code-scan entry point

@@ -26,6 +26,7 @@ TARGET="${1:-$HOME/.claude}"
 AGENTS=(
   tech-architecture-doc
   vbrd-to-proofhub
+  wp-to-eds-migrator
 )
 
 mkdir -p "$TARGET/agents"

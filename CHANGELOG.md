@@ -2,6 +2,29 @@
 
 All notable changes to this AI automation toolkit are documented in this file.
 
+## [1.6.0] - 2026-07-19
+
+### Added
+- **`agents/wp-to-eds-migrator.md` onboarded into the repo.** Previously existed only as an
+  untracked file at `~/.claude/agents/wp-to-eds-migrator.md` — not version-controlled, not
+  installed by `install-standalone-agents.sh`, not documented in the README. Now a proper
+  standalone agent alongside `tech-architecture-doc` and `vbrd-to-proofhub`.
+  - Added to `scripts/install-standalone-agents.sh`'s `AGENTS` list.
+  - Added to the README's agent table, standalone-agents description, and repo file tree.
+
+### Fixed
+- **`wp-to-eds-migrator` model policy violation.** Was set to `model: inherit`, which doesn't
+  follow the [global model policy](README.md#model-policy-global) (Opus for
+  planning/orchestration, Sonnet for execution/generation). It's a single-shot
+  analysis-then-code-generation agent with the same shape as `vbrd-to-proofhub`, so it's now
+  fixed to `model: sonnet`.
+  - Full audit of `agents/*.md`, `workflows/*.js`, `skills/*/SKILL.md`, and `scripts/*` found
+    no other gaps — the policy set up in [1.3.0](#130---2026-07-15) was already applied
+    consistently everywhere else that dispatches an LLM call.
+- **Stale installed copy of `tech-architecture-doc.md`** — `~/.claude/agents/` still had the
+  pre-1.5.0 version (missing column-level DB schema diagrams). Re-ran
+  `install-standalone-agents.sh` to resync.
+
 ## [1.5.0] - 2026-07-17
 
 ### Added
