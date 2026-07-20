@@ -1,8 +1,8 @@
 # AEM Development Automation Toolkit
 
-> AI-powered automation for Adobe AEM development with multi-agent code scanning, quality enforcement, performance testing, and intelligent code generation.
+> AI-powered automation for Adobe AEM development with multi-agent code scanning, automated code fixing, quality enforcement, performance testing, and intelligent code generation.
 
-A BMAD Method-based toolkit providing 12 specialized AI agents for AEM as a Cloud Service (AEMaaCS), Edge Delivery Services (EDS), Spring Boot, and adjacent stacks. Features token-optimized orchestration, zero-AI security scanning, and deterministic quality gates.
+A BMAD Method-based toolkit providing 18 specialized AI agents for AEM as a Cloud Service (AEMaaCS), Edge Delivery Services (EDS), Spring Boot, and adjacent stacks. Features token-optimized orchestration, automated code remediation, zero-AI security scanning, and deterministic quality gates.
 
 ## Table of Contents
 
@@ -347,7 +347,66 @@ Re-checks previously identified findings to determine fix status (Fixed/Open/Par
 
 ---
 
-### 📚 Utilities
+### � Code Remediation
+
+#### **Code Fix Agent** (`bmad-code-fix`)
+Automated code fixing via domain-specific fixer agents. **Edits source files directly.**
+
+**What it does:**
+- Parses findings from `bmad-code-scan`
+- Routes fixes to domain-specific fixer agents (java, htl, eds, js-react, css)
+- **WRITES actual code changes to source files** (not just recommendations)
+- Creates a git branch for all changes
+- Validates syntax/compilation after each fix
+- Presents `git diff` to human for review — **never auto-commits**
+
+**When to use:**
+- After running `bmad-code-scan` to auto-fix findings
+- Security vulnerability remediation
+- Performance optimization (N+1 queries, memory leaks)
+- Code quality improvements (dead code, anti-patterns)
+- Pre-deployment cleanup
+
+**Model:** opus (orchestration), sonnet (fixers)
+
+**Safety:**
+- All changes on a dedicated git branch (never touches main/develop)
+- Syntax validation after each fix (rollback on failure)
+- Human reviews `git diff` before committing
+- Can discard all changes with `git checkout .`
+
+**Example:**
+```
+Fix all critical issues from the code scan in repos/aem-project
+```
+
+**Three modes:**
+1. **All**: Fix everything (severity 1-5)
+2. **Critical**: Fix only severity 4-5 (Critical + High)
+3. **Domain**: Fix single stack only (e.g., "fix only Java issues")
+
+**Workflow:**
+1. Reads `analysis/*-findings.json` from prior scan
+2. Filters to open issues (ignores Fixed/Not Applicable)
+3. Groups by domain + file (minimizes merge conflicts)
+4. Creates branch `fix/code-scan-{date}`
+5. Dispatches fixer agents in dependency-safe order
+6. Fixer agents **edit the actual .java/.html/.js/.css files**
+7. Runs syntax/compile checks, rolls back on failure
+8. Shows `git diff --stat` with all changes
+9. **STOPS — human decides to commit, amend, or discard**
+
+**Output:** Modified source files, `analysis/fix-report.md`, `analysis/fix-results.json`
+
+**Dry-run mode:**
+```
+Generate fix plan (dry-run) for repos/aem-project
+```
+Writes `analysis/fix-plan.json` without applying changes.
+
+---
+
+### �📚 Utilities
 
 #### **Help Agent** (`bmad-help`)
 Context-aware guidance for the AEM Toolkit.
@@ -427,7 +486,38 @@ Run bmad-security-scan on repos/aem-project before deployment
 
 ---
 
-### Example 5: Load Testing
+### Example 5: Auto-Fix Code Issues
+
+After running a code scan, automatically fix the findings:
+
+```
+Fix all critical issues from the code scan in repos/aem-project
+```
+
+**What happens:**
+1. Reads `analysis/java-findings.json`, `analysis/htl-findings.json`, etc.
+2. Filters to open issues with severity ≥ 4 (Critical + High)
+3. Creates git branch `fix/code-scan-2026-07-20`
+4. Dispatches java-code-fixer and htl-code-fixer with batches
+5. Fixer agents **edit the actual source files** (SQL injection → parameterized query, missing @PreAuthorize, XSS context fixes)
+6. Validates syntax (Maven compile for Java, HTL validation)
+7. Runs `git diff --stat` showing changed files
+8. **Stops for human review** — you decide to commit, amend, or discard
+
+**Fix only a specific domain:**
+```
+Fix only Java issues in repos/aem-project
+```
+
+**Dry-run (plan only, no edits):**
+```
+Generate fix plan for repos/aem-project (dry-run mode)
+```
+Writes `analysis/fix-plan.json` showing what would be fixed, without touching source code.
+
+---
+
+### Example 6: Load Testing
 
 ```
 Run bmad-perf-test on https://api.example.com:
@@ -466,6 +556,8 @@ ai-agent/
 │   ├── install-global.sh       # Main installer
 │   ├── clone_or_update.sh      # Repo cloning
 │   ├── detect_stack.sh         # Tech stack detection
+│   ├── build_fix_plan.py       # Fix plan builder (deterministic)
+│   ├── collect_fix_results.py  # Fix result aggregator
 │   ├── security-scan/          # Security tool wrappers
 │   └── perf-test/              # k6 test runners
 │
@@ -507,6 +599,7 @@ ai-agent/
 
 **`scripts/`** - Zero-dependency automation
 - Shell scripts for deterministic operations (clone, detect, install)
+- Python scripts for fix planning and result collection (deterministic, zero LLM tokens)
 - No AI tokens used for these operations
 
 **`quality-gate/`** - Deterministic rule engine
@@ -636,6 +729,12 @@ by its `name:` frontmatter) or as the `agentType` a workflow script dispatches t
 |---|---|---|---|
 | `code-scan-orchestrator` | Opus | Read, Bash, Grep, Glob | Clones/updates a repo+branch, runs deterministic tech-stack detection, and checks for a prior `analysis/` folder; returns which analyzer agents apply and whether a cheap rescan is possible. No code review. |
 | `code-scan-verifier` | Sonnet | Read, Grep, Glob, Bash, Write | Rescan only: re-checks a batch of findings from a previous scan against the current code and returns Fixed/Open/Partially Fixed/Not Applicable/Unverifiable per issue. Doesn't hunt for new issues. |
+| `code-fix-orchestrator` | Opus | Read, Bash, Grep, Glob | Reads scan findings, builds fix execution plan, creates git branch, dispatches domain-specific fixer agents in dependency-safe order. Never edits code itself. |
+| `java-code-fixer` | Sonnet | Read, Grep, Glob, Bash, Write | **Edits Java source files** to fix security (SQL injection, auth), performance (N+1), correctness (null safety, transactions). Validates with Maven compile. |
+| `htl-code-fixer` | Sonnet | Read, Grep, Glob, Bash, Write | **Edits HTL template files** to fix XSS context handling, Sling Model binding, authoring patterns. Validates HTL syntax. |
+| `eds-code-fixer` | Sonnet | Read, Grep, Glob, Bash, Write | **Edits EDS block JS/CSS** to fix LCP, CLS, INP issues, enforce DOM-first patterns, image optimization. Validates JS syntax. |
+| `js-react-code-fixer` | Sonnet | Read, Grep, Glob, Bash, Write | **Edits JS/React files** to fix XSS, memory leaks, hooks violations, performance issues. Validates syntax. |
+| `css-code-fixer` | Sonnet | Read, Grep, Glob, Bash, Write | **Edits CSS/SCSS files** to fix specificity, accessibility (focus styles, reduced-motion), performance. Validates CSS syntax. |
 | `java-springboot-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | Backend security-first review: injection, auth, secrets, concurrency, N+1 queries, resource leaks. |
 | `aem-htl-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | AEM Sightly/HTL templates: XSS context handling, Sling Model binding, authoring/edit-mode behavior. |
 | `eds-blocks-analyzer` | Sonnet | Read, Grep, Glob, Bash, Write | Edge Delivery Services blocks: Core Web Vitals, DOM-first patterns, vanilla JS conventions. |
