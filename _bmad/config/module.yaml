@@ -1,0 +1,203 @@
+code: aem-toolkit
+name: "AEM Development Automation Toolkit"
+description: >-
+  AI-powered multi-agent system for AEM/Spring Boot/EDS code scanning,
+  security testing, performance testing, architecture documentation,
+  and WordPress-to-EDS migration. Optimized for zero-AI deterministic
+  tooling with LLM-driven orchestration only where judgment is needed.
+
+header: "AEM Toolkit Configuration"
+subheader: "Configure agents, scan targets, and output paths."
+
+# --- Settings ---
+ai_agent_repo:
+  prompt: "Absolute path to the ai-agent toolkit repo"
+  default: "/Users/kevaljoshi/Documents/ai-agent"
+  result: "{value}"
+
+base_dir:
+  prompt: "Where should scanned repos be cloned?"
+  default: "{ai_agent_repo}/repos"
+  result: "{value}"
+
+output_folder:
+  prompt: "Where should output artifacts be saved?"
+  default: "{ai_agent_repo}/output"
+  result: "{value}"
+
+model_planning:
+  prompt: "Model for orchestration/planning"
+  default: "opus"
+  result: "{value}"
+
+model_execution:
+  prompt: "Model for code review execution"
+  default: "sonnet"
+  result: "{value}"
+
+# --- Directories created at install ---
+directories:
+  - "{output_folder}"
+  - "{output_folder}/tech-architecture"
+  - "{base_dir}"
+
+# --- Agent manifest ---
+agents:
+  - id: code-scan-orchestrator
+    name: "Code Scan Orchestrator"
+    file: agents/code-scan-orchestrator.md
+    model: "{model_planning}"
+    triggers: [CS, SCAN, ROUTE]
+
+  - id: code-scan-verifier
+    name: "Code Scan Verifier"
+    file: agents/code-scan-verifier.md
+    model: "{model_execution}"
+    triggers: [RESCAN, VERIFY]
+
+  - id: aem-htl-analyzer
+    name: "AEM HTL Analyzer"
+    file: agents/aem-htl-analyzer.md
+    model: "{model_execution}"
+    triggers: [HTL]
+
+  - id: java-springboot-analyzer
+    name: "Java/Spring Boot Analyzer"
+    file: agents/java-springboot-analyzer.md
+    model: "{model_execution}"
+    triggers: [JAVA, SB]
+
+  - id: js-react-analyzer
+    name: "JS/React Analyzer"
+    file: agents/js-react-analyzer.md
+    model: "{model_execution}"
+    triggers: [JS, REACT]
+
+  - id: css-scss-analyzer
+    name: "CSS/SCSS Analyzer"
+    file: agents/css-scss-analyzer.md
+    model: "{model_execution}"
+    triggers: [CSS, SCSS]
+
+  - id: eds-blocks-analyzer
+    name: "EDS Blocks Analyzer"
+    file: agents/eds-blocks-analyzer.md
+    model: "{model_execution}"
+    triggers: [EDS, BLOCKS]
+
+  - id: security-scan
+    name: "Security Scanner"
+    file: agents/security-scan.md
+    model: "{model_execution}"
+    triggers: [SEC, SAST, DAST]
+
+  - id: perf-test
+    name: "Performance Tester"
+    file: agents/perf-test.md
+    model: "{model_execution}"
+    triggers: [PERF, LOAD, K6]
+
+  - id: tech-architecture-doc
+    name: "Architecture Documentarian"
+    file: agents/tech-architecture-doc.md
+    model: "{model_planning}"
+    triggers: [ARCH, TAD]
+
+  - id: vbrd-to-proofhub
+    name: "VBRD Translator"
+    file: agents/vbrd-to-proofhub.md
+    model: "{model_execution}"
+    triggers: [VBRD, PH]
+
+  - id: wp-to-eds-migrator
+    name: "WP-to-EDS Migrator"
+    file: agents/wp-to-eds-migrator.md
+    model: "{model_execution}"
+    triggers: [WP, MIGRATE]
+
+# --- Skill manifest ---
+skills:
+  # Phase 1 — Analysis
+  - id: bmad-code-scan
+    phase: 1
+    file: skills/bmad-code-scan/SKILL.md
+    description: "Clone repo, detect stack, dispatch analyzer agents"
+
+  - id: bmad-security-scan
+    phase: 1
+    file: skills/bmad-security-scan/SKILL.md
+    description: "Run semgrep/gitleaks/trivy/hadolint/checkov/nuclei"
+
+  - id: bmad-perf-test
+    phase: 1
+    file: skills/bmad-perf-test/SKILL.md
+    description: "Generate k6 scripts, run load tests, report SLAs"
+
+  # Phase 2 — Planning
+  - id: bmad-quality-gate
+    phase: 2
+    file: skills/bmad-quality-gate/SKILL.md
+    description: "Rule-driven AEM quality enforcement"
+
+  - id: bmad-tech-arch
+    phase: 2
+    file: skills/bmad-tech-arch/SKILL.md
+    description: "Multi-repo architecture discovery & documentation"
+
+  # Phase 3 — Solutioning
+  - id: bmad-wp-to-eds
+    phase: 3
+    file: skills/bmad-wp-to-eds/SKILL.md
+    description: "WordPress to AEM EDS block migration"
+
+  - id: bmad-vbrd-to-proofhub
+    phase: 3
+    file: skills/bmad-vbrd-to-proofhub/SKILL.md
+    description: "Visual BRD to ProofHub task translation"
+
+  # Phase 4 — Implementation
+  - id: bmad-unit-test-aem
+    phase: 4
+    file: skills/bmad-unit-test-aem/SKILL.md
+    description: "AEM unit test generation"
+
+  - id: bmad-unit-test-spring
+    phase: 4
+    file: skills/bmad-unit-test-spring/SKILL.md
+    description: "Spring Boot unit test generation"
+
+  # Core
+  - id: bmad-help
+    phase: 0
+    file: skills/bmad-help/SKILL.md
+    description: "Context-aware guidance on what to do next"
+
+# --- Task manifest ---
+tasks:
+  - id: clone-repo
+    file: tasks/clone-repo.md
+  - id: detect-stack
+    file: tasks/detect-stack.md
+  - id: plan-verification
+    file: tasks/plan-verification.md
+  - id: install-security-tools
+    file: tasks/install-security-tools.md
+  - id: install-perf-tools
+    file: tasks/install-perf-tools.md
+
+# --- Checklist manifest ---
+checklists:
+  - id: htl-review
+    file: checklists/htl-review.md
+  - id: java-review
+    file: checklists/java-review.md
+  - id: js-react-review
+    file: checklists/js-react-review.md
+  - id: css-review
+    file: checklists/css-review.md
+  - id: eds-blocks-review
+    file: checklists/eds-blocks-review.md
+  - id: security-preflight
+    file: checklists/security-preflight.md
+  - id: perf-preflight
+    file: checklists/perf-preflight.md

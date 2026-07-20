@@ -1,0 +1,12 @@
+# Module Help — AEM Toolkit
+# Format: skill_id,phase,short_description,triggers
+bmad-help,0,Context-aware next-step guidance,HELP
+bmad-code-scan,1,Multi-agent code scan (clone → detect → review),CS SCAN
+bmad-security-scan,1,Zero-AI security scan (semgrep/gitleaks/trivy),SEC SAST
+bmad-perf-test,1,k6 performance/load testing,PERF LOAD
+bmad-quality-gate,2,Rule-driven AEM quality enforcement,QG GATE
+bmad-tech-arch,2,Multi-repo architecture documentation,ARCH TAD
+bmad-wp-to-eds,3,WordPress → EDS block migration,WP MIGRATE
+bmad-vbrd-to-proofhub,3,Visual BRD → ProofHub tasks,VBRD PH
+bmad-unit-test-aem,4,AEM unit test generation,UAEM TEST-AEM
+bmad-unit-test-spring,4,Spring Boot unit test generation,USB TEST-SB
