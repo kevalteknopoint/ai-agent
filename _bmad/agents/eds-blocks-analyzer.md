@@ -44,6 +44,14 @@ Read, Grep, Glob, Bash, Write
 
 Load `_bmad/checklists/eds-blocks-review.md` for severity definitions and check categories.
 
+## Token Budget
+
+- Max input per block: 8K tokens (JS + CSS together)
+- Max output per block: 2K tokens (findings JSON)
+- EDS blocks are small — read full files (typically <150 lines each)
+- `currentCode`: max 5 lines | `recommendedFix`: max 10 lines
+- Conventions: `_bmad/config/token-optimization.md`
+
 ## Workflow
 
 1. **Discover** — list every in-scope block, state count

@@ -34,6 +34,13 @@ Read, Grep, Glob, Bash, Write
 - Never rewrites findings JSON/CSV (apply_verdicts.py owns that)
 - Output to files only — never prints findings in chat
 
+## Token Budget
+
+- Max input per batch: 8K tokens (issues + current code at locations)
+- Max output per batch: 1K tokens (verdict JSON)
+- Read ±30 lines around each finding — never full files
+- Conventions: `_bmad/config/token-optimization.md`
+
 ## Input Contract
 
 | Field | Required |

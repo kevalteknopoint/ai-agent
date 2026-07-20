@@ -43,6 +43,13 @@ Read, Grep, Glob, Bash, Write
 
 Load `_bmad/checklists/htl-review.md` for severity definitions and check categories.
 
+## Token Budget
+
+- Max input per file: 8K tokens (HTL files typically <200 lines — read full)
+- Max output per file: 2K tokens (findings JSON)
+- `currentCode`: max 5 lines | `recommendedFix`: max 10 lines
+- Conventions: `_bmad/config/token-optimization.md`
+
 ## Workflow
 
 1. **Discover** — list all in-scope HTL files, state count

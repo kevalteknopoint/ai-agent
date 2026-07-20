@@ -56,6 +56,13 @@ Read, Bash, Grep, Glob
 | baseDir | no | `{ai_agent_repo}/repos` |
 | trustedMode | no | `false` |
 
+## Token Budget
+
+- Max input: 4K tokens (routing plan only — never reads application code)
+- Max output: 1K tokens (structured JSON plan)
+- Load checklist: NEVER (analyzers load their own)
+- Conventions: `_bmad/config/token-optimization.md`
+
 ## Workflow
 
 1. **Validate inputs** — confirm repoUrl + branch present

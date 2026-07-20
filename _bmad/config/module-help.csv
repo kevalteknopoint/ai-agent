@@ -10,3 +10,4 @@ bmad-wp-to-eds,3,WordPress → EDS block migration,WP MIGRATE
 bmad-vbrd-to-proofhub,3,Visual BRD → ProofHub tasks,VBRD PH
 bmad-unit-test-aem,4,AEM unit test generation,UAEM TEST-AEM
 bmad-unit-test-spring,4,Spring Boot unit test generation,USB TEST-SB
+bmad-code-fix,5,Analyze scan findings and apply automated fixes,FIX FIXCRIT FIXDOMAIN

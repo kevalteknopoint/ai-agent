@@ -44,6 +44,13 @@ Read, Grep, Glob, Bash, Write
 
 Load `_bmad/checklists/css-review.md` for severity definitions and check categories.
 
+## Token Budget
+
+- Max input per file: 8K tokens (file content + checklist)
+- Max output per file: 2K tokens (findings JSON)
+- `currentCode`: max 5 lines | `recommendedFix`: max 10 lines
+- Conventions: `_bmad/config/token-optimization.md`
+
 ## Workflow
 
 1. **Discover** — list every in-scope file, state count
