@@ -1,0 +1,63 @@
+{
+  "comment": "Sample configurations for the security-scan system. Interactive use: 'security-scan' skill. Headless/batch: 'security-scan' workflow. Direct CLI: bash scripts/security-scan/run_scan.sh. Zero AI tokens in actual scanning.",
+
+  "example_1_single_repo": {
+    "description": "Scan a single repo — runs SAST + secrets + dependency + config audit.",
+    "gitUrl": "https://github.com/your-org/backend-api.git",
+    "branch": "main"
+  },
+
+  "example_2_with_dast": {
+    "description": "Full scan including live DAST probing with nuclei against a running instance.",
+    "gitUrl": "https://github.com/your-org/backend-api.git",
+    "branch": "main",
+    "targetUrl": "https://staging.example.com"
+  },
+
+  "example_3_quick_mode": {
+    "description": "Quick scan — skips DAST, runs shallow checks only. ~60% faster.",
+    "gitUrl": "https://github.com/your-org/backend-api.git",
+    "branch": "main",
+    "quick": true
+  },
+
+  "example_4_local_path": {
+    "description": "Scan a local directory instead of cloning from Git.",
+    "path": "/path/to/your/project"
+  },
+
+  "example_5_multiple_repos": {
+    "description": "Batch scan multiple repos in one run.",
+    "repos": [
+      { "gitUrl": "https://github.com/your-org/backend.git", "branch": "main" },
+      { "gitUrl": "https://github.com/your-org/frontend.git", "branch": "develop" },
+      { "gitUrl": "https://github.com/your-org/infra.git", "branch": "main" }
+    ]
+  },
+
+  "example_6_selective_scans": {
+    "description": "Skip specific scan domains — e.g., only run SAST + secrets.",
+    "gitUrl": "https://github.com/your-org/backend-api.git",
+    "branch": "main",
+    "skipDeps": true,
+    "skipConfig": true,
+    "skipDast": true
+  },
+
+  "example_7_severity_filter": {
+    "description": "Only report high and critical findings.",
+    "gitUrl": "https://github.com/your-org/backend-api.git",
+    "branch": "main",
+    "minSeverity": "high"
+  },
+
+  "example_8_direct_cli": {
+    "comment": "Run directly from terminal with zero AI involvement.",
+    "commands": [
+      "bash scripts/security-scan/run_scan.sh --git-url 'https://github.com/org/repo.git' --branch 'main'",
+      "bash scripts/security-scan/run_scan.sh --path '/local/project' --target-url 'https://staging.example.com'",
+      "bash scripts/security-scan/run_scan.sh --git-url 'https://github.com/org/repo.git' --branch 'main' --quick",
+      "bash scripts/security-scan/run_scan.sh --git-url 'https://github.com/org/repo.git' --branch 'main' --severity high"
+    ]
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "comment": "Sample configurations for the perf-test system. Interactive use: 'perf-test' skill. Headless/batch: 'perf-test' workflow. Direct CLI: bash scripts/perf-test/run_test.sh. Zero AI tokens in actual testing.",
+
+  "example_1_basic_load": {
+    "description": "Basic load test — 10 VUs for 1 minute against the homepage.",
+    "url": "https://staging.example.com",
+    "type": "load",
+    "vus": 10,
+    "duration": "1m"
+  },
+
+  "example_2_api_load": {
+    "description": "Load test with specific API endpoints and auth header.",
+    "url": "https://api.example.com",
+    "type": "load",
+    "vus": 50,
+    "duration": "5m",
+    "endpoints": [
+      { "method": "GET", "path": "/api/products", "name": "Product list" },
+      { "method": "GET", "path": "/api/products/1", "name": "Product detail" },
+      { "method": "POST", "path": "/api/search", "name": "Search", "body": { "query": "test" } }
+    ],
+    "headers": {
+      "Authorization": "Bearer YOUR_TOKEN",
+      "Accept": "application/json"
+    }
+  },
+
+  "example_3_stress_test": {
+    "description": "Stress test to find breaking point — ramps up to 200 VUs.",
+    "url": "https://api.example.com",
+    "type": "stress",
+    "vus": 200,
+    "duration": "10m"
+  },
+
+  "example_4_soak_test": {
+    "description": "Soak / endurance test — moderate load for 1 hour to detect memory leaks.",
+    "url": "https://app.example.com",
+    "type": "soak",
+    "vus": 30,
+    "duration": "1h"
+  },
+
+  "example_5_spike_test": {
+    "description": "Spike test — sudden burst to 500 VUs to test recovery.",
+    "url": "https://app.example.com",
+    "type": "spike",
+    "vus": 500,
+    "duration": "2m"
+  },
+
+  "example_6_with_baseline": {
+    "description": "Load test with baseline comparison — detects performance regressions.",
+    "url": "https://staging.example.com",
+    "type": "load",
+    "vus": 50,
+    "duration": "5m",
+    "baseline": "./perf-results/example.com/20260719_120000/k6-summary.json"
+  },
+
+  "example_7_custom_thresholds": {
+    "description": "Strict SLA thresholds for a latency-sensitive API.",
+    "url": "https://api.example.com",
+    "type": "load",
+    "vus": 100,
+    "duration": "5m",
+    "thresholdP95": 200,
+    "thresholdP99": 500,
+    "thresholdError": 0.5
+  },
+
+  "example_8_multiple_tests": {
+    "description": "Run multiple test types in sequence.",
+    "tests": [
+      { "url": "https://api.example.com", "type": "load", "vus": 50, "duration": "3m" },
+      { "url": "https://api.example.com", "type": "stress", "vus": 200, "duration": "5m" }
+    ]
+  },
+
+  "example_9_direct_cli": {
+    "comment": "Run directly from terminal with zero AI involvement.",
+    "commands": [
+      "bash scripts/perf-test/run_test.sh --url 'https://staging.example.com' --type load --vus 50 --duration 5m",
+      "bash scripts/perf-test/run_test.sh --url 'https://api.example.com' --type stress --vus 200 --duration 10m --endpoint 'GET /api/products Products' --header 'Authorization: Bearer TOKEN'",
+      "bash scripts/perf-test/run_test.sh --url 'https://app.example.com' --type soak --vus 30 --duration 1h",
+      "bash scripts/perf-test/run_test.sh --url 'https://app.example.com' --type spike --vus 500 --duration 2m",
+      "bash scripts/perf-test/run_test.sh --url 'https://staging.example.com' --type load --vus 50 --duration 5m --baseline './perf-results/prev/k6-summary.json'",
+      "bash scripts/perf-test/run_test.sh --url 'https://staging.example.com' --type load --vus 50 --duration 5m --dry-run"
+    ]
+  }
+}

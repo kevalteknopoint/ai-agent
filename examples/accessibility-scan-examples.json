@@ -1,0 +1,135 @@
+{
+  "skill": "bmad-accessibility-scan",
+  "examples": [
+    {
+      "trigger": "A11Y",
+      "input": "Scan https://github.com/org/my-website.git branch main against WCAG 2.1 AA. Live URL: https://my-website.com",
+      "description": "Full accessibility scan — code + live — against WCAG 2.1 AA standard",
+      "expected_flow": [
+        "1. Confirm standard: WCAG 2.1 AA",
+        "2. Clone repo (main branch)",
+        "3. Detect tech stack (React/Next.js)",
+        "4. Run static analysis (eslint-plugin-jsx-a11y, pattern checks)",
+        "5. Run runtime scan on live URL (axe-core, pa11y, Lighthouse)",
+        "6. Cross-reference findings",
+        "7. Generate consolidated report",
+        "8. Present prioritized findings",
+        "9. Offer fix remediation (user confirms each edit)"
+      ]
+    },
+    {
+      "trigger": "A11YCODE",
+      "input": "Check accessibility of local path /Users/dev/projects/my-app against WCAG 2.2 Level A",
+      "description": "Code-only scan against WCAG 2.2 A — no live URL needed",
+      "expected_flow": [
+        "1. Confirm standard: WCAG 2.2 A",
+        "2. Validate local path exists",
+        "3. Detect tech stack",
+        "4. Run static analysis (html-validate, eslint, pattern scan)",
+        "5. Generate findings report",
+        "6. Present issues sorted by severity"
+      ]
+    },
+    {
+      "trigger": "A11YLIVE",
+      "input": "Audit https://example.com for Section 508 compliance. Check pages: /, /about, /contact, /services",
+      "description": "Live-only scan against Section 508 (maps to WCAG 2.0 AA)",
+      "expected_flow": [
+        "1. Confirm standard: Section 508",
+        "2. Verify URL is reachable",
+        "3. Scan 4 pages at desktop + mobile viewports",
+        "4. Run axe-core with section508 + wcag2a + wcag2aa tags",
+        "5. Run pa11y with Section508 standard",
+        "6. Run Lighthouse accessibility audit",
+        "7. Aggregate and deduplicate findings",
+        "8. Present findings with WCAG SC references"
+      ]
+    },
+    {
+      "trigger": "A11YFIX",
+      "input": "Fix the accessibility issues found in the last scan. Ask me before each change.",
+      "description": "Fix mode — remediate violations with user confirmation per edit",
+      "expected_flow": [
+        "1. Load previous scan findings from accessibility-analysis/findings.json",
+        "2. Sort by severity (critical first)",
+        "3. For each issue:",
+        "   a. Present violation (WCAG SC, element, who is affected)",
+        "   b. Show proposed fix (before/after diff)",
+        "   c. Wait for user: yes/skip/modify/stop",
+        "   d. Apply if confirmed",
+        "4. After all fixes: run rescan",
+        "5. Show before/after delta"
+      ]
+    },
+    {
+      "trigger": "WCAG",
+      "input": "Check if our EDS blocks meet WCAG 2.1 AA. Repo: https://github.com/org/eds-site.git branch develop",
+      "description": "EDS-specific accessibility scan — checks block JS for a11y patterns",
+      "expected_flow": [
+        "1. Confirm standard: WCAG 2.1 AA",
+        "2. Clone repo (develop branch)",
+        "3. Detect EDS blocks structure",
+        "4. Run pattern scan for common EDS a11y issues:",
+        "   - Missing alt in createOptimizedPicture calls",
+        "   - Click handlers without keyboard alternatives",
+        "   - Missing ARIA on dynamic block content",
+        "   - Missing skip navigation",
+        "   - Focus management in carousels/accordions/tabs",
+        "5. Generate EDS-specific findings",
+        "6. Offer fixes respecting EDS decorate(block) pattern"
+      ]
+    },
+    {
+      "trigger": "A11Y",
+      "input": "Full EN 301 549 audit for EU compliance. Repo: git@github.com:corp/portal.git branch release/v2. Live: https://portal.corp.eu. Viewports: both. All pages.",
+      "description": "EU standard compliance audit — full scan with all viewports",
+      "expected_flow": [
+        "1. Confirm standard: EN 301 549 (maps to WCAG 2.1 AA)",
+        "2. Clone repo (release/v2 branch)",
+        "3. Run code analysis",
+        "4. Crawl live site (up to 20 pages)",
+        "5. Scan each page at 1280x720 and 375x812",
+        "6. Cross-reference code + live findings",
+        "7. Generate EU-compliance-formatted report",
+        "8. Flag issues relevant to EN 301 549 specifically"
+      ]
+    }
+  ],
+  "common_findings": [
+    {
+      "wcag_sc": "1.1.1",
+      "title": "Non-text Content",
+      "common_violation": "Images without alt text",
+      "typical_fix": "Add descriptive alt or alt=\"\" for decorative",
+      "severity": 4
+    },
+    {
+      "wcag_sc": "1.4.3",
+      "title": "Contrast (Minimum)",
+      "common_violation": "Text color vs background below 4.5:1 ratio",
+      "typical_fix": "Darken text or lighten background to meet ratio",
+      "severity": 4
+    },
+    {
+      "wcag_sc": "2.1.1",
+      "title": "Keyboard",
+      "common_violation": "Interactive elements only work with mouse",
+      "typical_fix": "Add keyboard event handlers + tabindex + role",
+      "severity": 5
+    },
+    {
+      "wcag_sc": "2.4.7",
+      "title": "Focus Visible",
+      "common_violation": "outline:none without replacement indicator",
+      "typical_fix": "Add :focus-visible styles with sufficient contrast",
+      "severity": 4
+    },
+    {
+      "wcag_sc": "4.1.2",
+      "title": "Name, Role, Value",
+      "common_violation": "Custom widgets without ARIA roles/states",
+      "typical_fix": "Add appropriate role, aria-expanded, aria-selected etc.",
+      "severity": 4
+    }
+  ]
+}

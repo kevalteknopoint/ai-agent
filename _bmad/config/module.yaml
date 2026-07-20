@@ -163,6 +163,18 @@ agents:
     model: "{model_execution}"
     triggers: [FIXCSS]
 
+  - id: accessibility-scan-orchestrator
+    name: "Accessibility Scan Orchestrator"
+    file: agents/accessibility-scan-orchestrator.md
+    model: "{model_planning}"
+    triggers: [A11Y, WCAG, ACCESSIBILITY]
+
+  - id: accessibility-code-fixer
+    name: "Accessibility Code Fixer"
+    file: agents/accessibility-code-fixer.md
+    model: "{model_execution}"
+    triggers: [FIXA11Y, FIXWCAG]
+
 # --- Skill manifest ---
 skills:
   # Phase 1 — Analysis
@@ -214,6 +226,12 @@ skills:
     file: skills/bmad-unit-test-spring/SKILL.md
     description: "Spring Boot unit test generation"
 
+  # Phase 1.5 — Accessibility
+  - id: bmad-accessibility-scan
+    phase: 1
+    file: skills/bmad-accessibility-scan/SKILL.md
+    description: "Multi-standard a11y audit (axe-core/pa11y/Lighthouse) + code fixes"
+
   # Phase 5 — Remediation
   - id: bmad-code-fix
     phase: 5
@@ -242,6 +260,8 @@ tasks:
     file: tasks/build-fix-plan.md
   - id: collect-fix-results
     file: tasks/collect-fix-results.md
+  - id: install-accessibility-tools
+    file: tasks/install-accessibility-tools.md
 
 # --- Checklist manifest ---
 checklists:
@@ -261,3 +281,5 @@ checklists:
     file: checklists/perf-preflight.md
   - id: code-fix-review
     file: checklists/code-fix-review.md
+  - id: accessibility-preflight
+    file: checklists/accessibility-preflight.md
