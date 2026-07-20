@@ -39,7 +39,7 @@ That's it! The installation script sets up all agents for both Claude Code and C
 ## Prerequisites
 
 ### Required
-- **Node.js** 16+ (for quality-gate dependencies)
+- **Node.js** 20+ (for quality-gate dependencies)
 - **Git** (for repository operations)
 - **IDE**: Claude Code *or* Cursor/Windsurf
 
@@ -65,6 +65,8 @@ cd quality-gate && npm install && cd ..
 # Install all agents into your IDE
 ./scripts/install-global.sh
 ```
+
+> **Note:** If you encounter npm dependency conflicts, delete `quality-gate/node_modules` and `quality-gate/package-lock.json`, then run `npm install` again.
 
 The installation script:
 - Copies agent definitions to `_bmad/`
