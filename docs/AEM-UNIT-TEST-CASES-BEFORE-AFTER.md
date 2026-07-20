@@ -113,17 +113,17 @@ const baseDir = args?.baseDir || process.cwd()
 // Could result in:
 // /tmp/repo-a (bad)
 // ~/Documents/some-folder/repo-a (bad)
-// /Users/kevaljoshi/some-random-path/repo-a (bad)
+// /path/to/some-random-path/repo-a (bad)
 ```
 
 #### After
 ```javascript
 // ✅ Strict enforcement - no flexibility
-const baseDir = `${process.cwd()}/project-unit-test cases/repo`
+const baseDir = args?.baseDir || `${process.env.HOME}/Documents/project-source/project-unit-test cases/repos`
 
 // ALWAYS results in:
-// /Users/kevaljoshi/Documents/project-source/project-unit-test cases/repo/repo-a
-// /Users/kevaljoshi/Documents/project-source/project-unit-test cases/repo/repo-b
+// $HOME/Documents/project-source/project-unit-test cases/repos/repo-a
+// $HOME/Documents/project-source/project-unit-test cases/repos/repo-b
 // (Centralized, organized, predictable)
 ```
 

@@ -775,7 +775,7 @@ scattering them across the filesystem:
 
 | Workflow | Default clone location | Override |
 |---|---|---|
-| `aem-unit-test-cases`, `spring-boot-unit-test-cases`, `aem-quality-gate` | `/Users/kevaljoshi/Documents/project-source/project-unit-test cases/repos` | `args.baseDir` |
+| `aem-unit-test-cases`, `spring-boot-unit-test-cases`, `aem-quality-gate` | `$HOME/Documents/project-source/project-unit-test cases/repos` | `args.baseDir` |
 | `code-scan` (skill or workflow) | `<this-repo>/repos` | `args.baseDir` (workflow) or say a different location when the skill asks |
 | `tech-architecture-doc` (agent) | `<this-repo>/repos` — reuses `clone_or_update.sh`, so several client repos land side by side | `baseDir` input, or point it at existing local clones |
 

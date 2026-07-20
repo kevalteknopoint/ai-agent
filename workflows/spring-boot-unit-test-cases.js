@@ -18,8 +18,8 @@ const trustedMode = args?.trustedMode === true
 const MODEL_PLANNING = 'opus'
 const MODEL_EXECUTION = 'sonnet'
 // ENFORCE strict location: project-unit-test cases/repos
-// Note: process.cwd() doesn't work in workflow sandbox, use hardcoded path or override via args.baseDir
-const baseDir = args?.baseDir || '/Users/kevaljoshi/Documents/project-source/project-unit-test cases/repos'
+// Note: process.cwd() doesn't work in workflow sandbox, use HOME environment variable or override via args.baseDir
+const baseDir = args?.baseDir || `${process.env.HOME}/Documents/project-source/project-unit-test cases/repos`
 
 if (!Array.isArray(testCases) || testCases.length === 0) {
   throw new Error('No test cases provided. Pass: [{repoUrl, productionBranch, testCases}, ...]')

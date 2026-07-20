@@ -16,7 +16,7 @@
     "notes": [
       "Safe Mode (default) — you'll see permission gates for setup",
       "Scanning and reporting run automatically (no gates)",
-      "Reports saved to /Users/kevaljoshi/Documents/project-source/project-unit-test cases/repos/aem-core/quality-reports/",
+      "Reports saved to <baseDir>/<repoName>/quality-reports/",
       "Duration: ~5-10 minutes depending on project size"
     ]
   },
@@ -91,7 +91,7 @@
     "ciExecution": "github-actions",
     "ciCode": ".github/workflows/quality-gate.yml:\n  - name: Run AEM Quality Gate\n    run: |\n      /aem-quality-gate --args '{\n        \"trustedMode\": true,\n        \"baseDir\": \"/runner/quality\",\n        \"repositories\": [{\n          \"repoUrl\": \"${{ github.repository }}\",\n          \"repoName\": \"${GITHUB_REF##*/}\",\n          \"branch\": \"${{ github.ref_name }}\"\n        }]\n      }'\n\n  - name: Upload Quality Reports\n    uses: actions/upload-artifact@v3\n    with:\n      name: quality-gate-reports\n      path: /runner/quality/**/quality-reports/",
     "notes": [
-      "baseDir defaults to /Users/kevaljoshi/.../project-unit-test cases/repos",
+      "baseDir defaults to $HOME/Documents/project-source/project-unit-test cases/repos",
       "Use custom baseDir for CI/CD runners where default path doesn't exist",
       "All reports stored in /ci/aem-quality-reports/",
       "Reports can be uploaded as GitHub artifacts or archived"

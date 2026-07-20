@@ -35,7 +35,7 @@
     "description": "Override the default clone location (defaults to <ai-agent-repo>/repos)",
     "repoUrl": "https://github.com/your-org/aem-project.git",
     "branch": "main",
-    "baseDir": "/Users/kevaljoshi/Documents/code-scans/repos"
+    "baseDir": "/path/to/your/code-scans/repos"
   },
 
   "example_5_rescan": {

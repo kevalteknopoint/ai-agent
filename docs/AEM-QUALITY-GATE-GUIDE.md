@@ -203,7 +203,7 @@ Example curator proposals:
 }'
 ```
 
-Default location: `/Users/kevaljoshi/Documents/project-source/project-unit-test cases/repos`
+Default location: `$HOME/Documents/project-source/project-unit-test cases/repos`
 
 ## Results Output
 

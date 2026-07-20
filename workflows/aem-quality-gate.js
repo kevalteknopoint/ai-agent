@@ -71,7 +71,7 @@ async function aggregateReports(reportDir) {
 // Main workflow
 phase('Input Validation')
 const repos = args?.repositories || []
-const baseDir = args?.baseDir || '/Users/kevaljoshi/Documents/project-source/project-unit-test cases/repos'
+const baseDir = args?.baseDir || `${process.env.HOME}/Documents/project-source/project-unit-test cases/repos`
 const trustedMode = args?.trustedMode === true
 const aiCuration = args?.aiCuration === true
 

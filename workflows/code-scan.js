@@ -39,7 +39,7 @@ export const meta = {
 
 phase('Input Validation')
 
-const AI_AGENT_REPO = args?.aiAgentRepo || '/Users/kevaljoshi/Documents/ai-agent'
+const AI_AGENT_REPO = args?.aiAgentRepo || process.cwd()
 const baseDir = args?.baseDir || `${AI_AGENT_REPO}/repos`
 const trustedMode = args?.trustedMode === true
 const MODEL_PLANNING = 'opus'

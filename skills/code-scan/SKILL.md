@@ -26,8 +26,8 @@ running on Sonnet for execution. Planning/orchestration stays on Opus
 (including repository setup + routing). Keep your own reasoning and tool
 calls to the mechanical steps below; do not read application source yourself.
 
-Resolve `<ai-agent-repo>` as `/Users/kevaljoshi/Documents/ai-agent` (or the
-path this skill file lives under, if the toolkit has moved).
+Resolve `<ai-agent-repo>` as the absolute path to this toolkit repository.
+When invoked from a workflow, this is passed via `args.aiAgentRepo`.
 
 ## Two runs, one skill
 
@@ -76,8 +76,8 @@ Invoke the `code-scan-orchestrator` subagent (Agent tool) with the
 Set up and route this repo for code-scan.
 repoUrl: <url>
 branch: <branch>
-baseDir: /Users/kevaljoshi/Documents/ai-agent/repos
-ai-agent-repo: /Users/kevaljoshi/Documents/ai-agent
+baseDir: <ai-agent-repo>/repos
+ai-agent-repo: <absolute-path-to-toolkit>
 mode: auto
 ```
 

@@ -12,7 +12,7 @@ subheader: "Configure agents, scan targets, and output paths."
 # --- Settings ---
 ai_agent_repo:
   prompt: "Absolute path to the ai-agent toolkit repo"
-  default: "/Users/kevaljoshi/Documents/ai-agent"
+  default: "."
   result: "{value}"
 
 base_dir:
