@@ -1,48 +1,67 @@
 #!/usr/bin/env bash
-# install-global.sh [target-claude-dir]
+# install-global.sh [target-dir]
 #
-# Installs the code-scan system (5 analyzer agents + the router agent + the
-# rescan verifier + the workflow + the skill) into a Claude Code project-scope
-# `.claude/` directory so it's invokable from ANY project nested under it —
-# not just from inside this toolkit repo.
+# Installs the BMAD-structured AEM Toolkit skills into your IDE's global
+# configuration directory, making all bmad-* skills available from any project.
 #
-# Why this location and not this repo's own agents/workflows/skills dirs:
-# Claude Code discovers agents/workflows/skills by walking UP from the
-# current directory looking for `.claude/agents`, `.claude/workflows`,
-# `.claude/skills` (merged with the ones in `~/.claude`). Every other
-# custom agent in this environment (aem-test-case-creator, eds-block-
-# creator, spring-boot-test-creator, ...) already lives in
-# project-source/.claude/ for exactly this reason — placing code-scan
-# there means it works from any client repo under project-source/projects/
-# without per-project setup.
+# For Claude Code: Installs to ~/.claude/skills/ (or custom target)
+# For Cursor/Windsurf: Also installs to ~/.agents/skills/
 #
-# Re-run this script after editing anything under agents/, workflows/, or
-# skills/ in this repo to re-sync the installed copies.
+# This copies the skill launchers from .claude/skills/ and .agents/skills/
+# in this repo to your global IDE configuration, making them discoverable
+# from any workspace.
+#
+# Re-run this script after pulling updates to sync the latest versions.
 
 set -euo pipefail
 
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TARGET="${1:-/Users/kevaljoshi/Documents/project-source/.claude}"
 
-mkdir -p "$TARGET/agents" "$TARGET/workflows" "$TARGET/skills/code-scan"
+# Default to user's home directory if no target specified
+# Users can override with: ./scripts/install-global.sh /custom/path
+CLAUDE_TARGET="${1:-$HOME/.claude}"
+AGENTS_TARGET="${1:-$HOME/.agents}"
 
-cp "$SRC/agents/code-scan-orchestrator.md" "$TARGET/agents/"
-cp "$SRC/agents/code-scan-verifier.md" "$TARGET/agents/"
-cp "$SRC/agents/java-springboot-analyzer.md" "$TARGET/agents/"
-cp "$SRC/agents/aem-htl-analyzer.md" "$TARGET/agents/"
-cp "$SRC/agents/eds-blocks-analyzer.md" "$TARGET/agents/"
-cp "$SRC/agents/js-react-analyzer.md" "$TARGET/agents/"
-cp "$SRC/agents/css-scss-analyzer.md" "$TARGET/agents/"
-cp "$SRC/workflows/code-scan.js" "$TARGET/workflows/"
-cp "$SRC/skills/code-scan/SKILL.md" "$TARGET/skills/code-scan/"
-
-echo "Installed into $TARGET:"
-echo "  agents:    code-scan-orchestrator, code-scan-verifier, java-springboot-analyzer,"
-echo "             aem-htl-analyzer, eds-blocks-analyzer, js-react-analyzer, css-scss-analyzer"
-echo "  workflow:  code-scan.js"
-echo "  skill:     code-scan"
+echo "Installing AEM Toolkit BMAD skills..."
+echo "Source: $SRC"
+echo "Claude Code target: $CLAUDE_TARGET/skills/"
+echo "Cursor/Windsurf target: $AGENTS_TARGET/skills/"
 echo ""
-echo "New Claude Code sessions started from anywhere under $(dirname "$TARGET") will now see these."
-echo "This toolkit repo's absolute path ($SRC) is what the agents use to find the shared"
-echo "scripts/ (build_issues_csv.py, plan_verification.py, apply_verdicts.py,"
-echo "build_rescan_summary.py) — that still works regardless of where the scan target lives."
+
+# Install Claude Code skills
+mkdir -p "$CLAUDE_TARGET/skills"
+if [ -d "$SRC/.claude/skills" ]; then
+  cp -r "$SRC/.claude/skills/"* "$CLAUDE_TARGET/skills/" 2>/dev/null || true
+  echo "✓ Installed Claude Code skills (10 skills)"
+else
+  echo "⚠ Warning: .claude/skills not found in source"
+fi
+
+# Install Cursor/Windsurf skills
+mkdir -p "$AGENTS_TARGET/skills"
+if [ -d "$SRC/.agents/skills" ]; then
+  cp -r "$SRC/.agents/skills/"* "$AGENTS_TARGET/skills/" 2>/dev/null || true
+  echo "✓ Installed Cursor/Windsurf skills (10 skills)"
+else
+  echo "⚠ Warning: .agents/skills not found in source"
+fi
+
+echo ""
+echo "Installation complete!"
+echo ""
+echo "Available skills:"
+echo "  - bmad-help               Context-aware guidance"
+echo "  - bmad-code-scan          Multi-agent code scanning"
+echo "  - bmad-security-scan      Zero-AI security scanning"
+echo "  - bmad-perf-test          k6 performance testing"
+echo "  - bmad-quality-gate       Rule-driven quality enforcement"
+echo "  - bmad-tech-arch          Architecture documentation"
+echo "  - bmad-wp-to-eds          WordPress to EDS migration"
+echo "  - bmad-vbrd-to-proofhub   Visual BRD to ProofHub"
+echo "  - bmad-unit-test-aem      AEM unit test generation"
+echo "  - bmad-unit-test-spring   Spring Boot unit test generation"
+echo ""
+echo "Usage:"
+echo "  Start a new IDE session and run: bmad-help"
+echo ""
+echo "To update: Re-run this script after pulling repo updates"
