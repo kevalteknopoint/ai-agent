@@ -1,52 +1,629 @@
 # AEM Development Automation Toolkit
 
-AI-powered and rule-driven automation for Adobe AEM as a Cloud Service (AEMaaCS) and adjacent
-stacks (Spring Boot, Edge Delivery Services, React): unit test generation, rule-driven quality
-gating, and multi-agent security-first code scanning.
+> AI-powered automation for Adobe AEM development with multi-agent code scanning, quality enforcement, performance testing, and intelligent code generation.
 
-This README is the full catalog — every agent, workflow, and skill in this repo, what it does,
-what model/tools it uses, and how to run it. If you're new to this repo (including "someone just
-handed me this repo"), start at [Setup — using this repo](#setup--using-this-repo-fresh-clone-or-shared-copy).
+A BMAD Method-based toolkit providing 12 specialized AI agents for AEM as a Cloud Service (AEMaaCS), Edge Delivery Services (EDS), Spring Boot, and adjacent stacks. Features token-optimized orchestration, zero-AI security scanning, and deterministic quality gates.
 
-## Start Here — Clone, Install, Verify
+## Table of Contents
 
-### 1. Clone this toolkit repo
+- [Quick Start](#quick-start)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Available Agents](#available-agents)
+- [Usage Examples](#usage-examples)
+- [Project Structure](#project-structure)
+- [Advanced Topics](#advanced-topics)
+
+---
+
+## Quick Start
+
+**Get up and running in 3 steps:**
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/<your-org>/ai-agent.git
 cd ai-agent
+
+# 2. Run installation script
+./scripts/install-global.sh
+
+# 3. Start using agents (in Claude Code or Cursor)
+bmad-help
 ```
 
-### 2. Install prerequisites
+That's it! The installation script sets up all agents for both Claude Code and Cursor/Windsurf IDEs.
+
+---
+
+## Prerequisites
+
+### Required
+- **Node.js** 16+ (for quality-gate dependencies)
+- **Git** (for repository operations)
+- **IDE**: Claude Code *or* Cursor/Windsurf
+
+### Optional (for specific features)
+- **Docker** (for security scanning with trivy/hadolint)
+- **k6** (for performance testing)
+- **Python 3** (for verification scripts)
+
+---
+
+## Installation
+
+### 1. Clone and Install
 
 ```bash
-# Claude Code CLI (or use claude.ai/code)
-npm install -g @anthropic-ai/claude-code
+# Clone the repository
+git clone https://github.com/<your-org>/ai-agent.git
+cd ai-agent
 
-# Quality Gate dependencies (one-time)
+# Install quality gate dependencies (one-time)
 cd quality-gate && npm install && cd ..
-```
 
-### 3. Install agents/skills/workflows into shared Claude directory
-
-```bash
+# Install all agents into your IDE
 ./scripts/install-global.sh
 ```
 
-### 4. Verify core commands from a fresh Claude Code session
+The installation script:
+- Copies agent definitions to `_bmad/`
+- Registers skills in `.claude/skills/` (for Claude Code)
+- Registers skills in `.agents/skills/` (for Cursor/Windsurf)
+- Makes all `bmad-*` commands available globally
 
-```bash
-/code-scan --args '{"repoUrl":"https://github.com/org/repo.git","branch":"main"}'
-/aem-quality-gate --args '{"repositories":[{"repoUrl":"https://github.com/org/repo.git","repoName":"repo","branch":"main"}]}'
+### 2. Verify Installation
+
+Start a new chat session in your IDE and run:
+
+```
+bmad-help
 ```
 
-### 5. AEM expert defaults (recommended)
+You should see context-aware guidance and a list of available skills.
 
-- Use `code-scan` when you need architecture + security review across mixed AEM stacks (Java + HTL + EDS + JS/CSS).
-- Use `aem-quality-gate` for fast deterministic policy enforcement before PR review.
-- Use `aem-unit-test-cases` only when you are ready to generate and push test branches.
+### 3. IDE-Specific Setup
 
-## What's inside
+**Claude Code:**
+- Skills are automatically discovered from `.claude/skills/`
+- Invoke with natural language or `/bmad-*` commands
+
+**Cursor/Windsurf:**
+- Skills are automatically discovered from `.agents/skills/`
+- Invoke with `@bmad-*` or natural language
+
+---
+
+## Available Agents
+
+### 🔍 Analysis & Discovery
+
+#### **Code Scan Orchestrator** (`bmad-code-scan`)
+Multi-agent code scanning with intelligent tech stack detection.
+
+**What it does:**
+- Clones repository and detects tech stack (Java, HTL, EDS, JS/CSS, React)
+- Dispatches specialized analyzer agents in parallel
+- Produces severity-ranked findings (Blocker/Critical/Major/Minor)
+- Supports full scan and rescan modes (rescan verifies fixes without new analysis)
+
+**When to use:**
+- Initial code review for new repositories
+- Pre-merge quality checks
+- Post-fix verification (rescan mode)
+- Architecture discovery
+
+**Model:** opus (orchestration), sonnet (analyzers)
+
+**Example:**
+```
+Use bmad-code-scan on https://github.com/org/aem-project.git branch main
+```
+
+**Output:** `analysis/findings.json`, `analysis/findings.csv`, `analysis/report.md`
+
+---
+
+#### **Security Scanner** (`bmad-security-scan`)
+Zero-AI security scanning with industry-standard tools.
+
+**What it does:**
+- Runs semgrep (SAST), gitleaks (secrets), trivy (container), hadolint (Dockerfile), checkov (IaC), nuclei (DAST)
+- Generates consolidated security report
+- No token usage (deterministic tools only)
+
+**When to use:**
+- Pre-deployment security gate
+- CI/CD pipeline integration
+- Compliance audits
+- Secrets detection
+
+**Model:** sonnet (orchestration only, tools are deterministic)
+
+**Example:**
+```
+Run bmad-security-scan on the current project
+```
+
+---
+
+#### **Architecture Documentarian** (`bmad-tech-arch`)
+Multi-repository architecture discovery with C4 diagrams.
+
+**What it does:**
+- Scans multiple repositories to reconstruct end-to-end architecture
+- Generates C4 context, container, and component diagrams
+- Documents system integration, API contracts, data flows
+- Produces technical architecture document with evidence-based findings
+
+**When to use:**
+- Documenting legacy systems
+- Client handoff documentation
+- Migration planning
+- Onboarding new team members
+
+**Model:** opus
+
+**Example:**
+```
+Generate tech architecture doc for:
+- https://github.com/org/frontend.git
+- https://github.com/org/backend.git
+- https://github.com/org/infrastructure.git
+```
+
+---
+
+### ⚡ Quality & Performance
+
+#### **Quality Gate** (`bmad-quality-gate`)
+Rule-driven AEM quality enforcement (zero AI).
+
+**What it does:**
+- Validates AEM code against 200+ deterministic rules
+- Checks HTL, Java, frontend, and OakPAL policies
+- Generates pass/fail report with actionable feedback
+- No token usage (pure rule engine)
+
+**When to use:**
+- PR checks before code review
+- CI/CD quality gates
+- Policy enforcement
+- Onboarding validation
+
+**Model:** None (deterministic rules only)
+
+**Example:**
+```bash
+cd quality-gate
+node runner/run-quality-gate.sh ../repos/my-aem-project
+```
+
+---
+
+#### **Performance Tester** (`bmad-perf-test`)
+k6-based load and performance testing.
+
+**What it does:**
+- Generates k6 test scripts from API specs or manual definitions
+- Runs load tests with configurable VUs (virtual users) and duration
+- Reports SLA pass/fail against thresholds (p95, error rate)
+- Produces performance metrics and recommendations
+
+**When to use:**
+- Pre-production load testing
+- API performance validation
+- Capacity planning
+- SLA verification
+
+**Model:** sonnet
+
+**Example:**
+```
+Run bmad-perf-test on https://api.example.com/products with 50 VUs for 2 minutes
+```
+
+---
+
+### 🧪 Testing & Code Generation
+
+#### **AEM Unit Test Generator** (`bmad-unit-test-aem`)
+Generates AEM unit tests for Sling Models, servlets, and OSGi components.
+
+**What it does:**
+- Scans AEM Java codebase for testable components
+- Generates JUnit 5 + Mockito tests with AEM Mocks
+- Creates test branch and pushes to remote
+- Covers Sling Models, servlets, schedulers, OSGi services
+
+**When to use:**
+- Increasing test coverage for AEM projects
+- Retroactive test generation for legacy code
+- CI/CD test automation
+
+**Model:** sonnet
+
+**Example:**
+```
+Generate AEM unit tests for repos/dtin-indiafirstlife-commons on branch feature/tests
+```
+
+---
+
+#### **Spring Boot Unit Test Generator** (`bmad-unit-test-spring`)
+Generates Spring Boot unit and integration tests.
+
+**What it does:**
+- Scans Spring Boot codebase for controllers, services, repositories
+- Generates JUnit 5 + Mockito + Spring Boot Test tests
+- Creates test branch and pushes to remote
+- Includes integration tests with @SpringBootTest
+
+**When to use:**
+- Increasing test coverage for Spring Boot projects
+- Retroactive test generation
+- TDD workflow acceleration
+
+**Model:** sonnet
+
+**Example:**
+```
+Generate Spring Boot tests for repos/backend-apis on branch feature/spring-tests
+```
+
+---
+
+### 🔄 Migration & Transformation
+
+#### **WordPress to EDS Migrator** (`bmad-wp-to-eds`)
+Migrates WordPress components to AEM Edge Delivery Services.
+
+**What it does:**
+- Converts WordPress blocks (Gutenberg/ACF), shortcodes, and template partials
+- Generates EDS blocks compatible with Universal Editor (XWalk)
+- Produces ESLint/Stylelint-clean, accessible, variant-driven code
+- Consolidates similar WP blocks into minimal reusable EDS blocks
+
+**When to use:**
+- WordPress to AEM EDS migration
+- Content platform modernization
+- Universal Editor adoption
+
+**Model:** sonnet
+
+**Example:**
+```
+Migrate WordPress theme from /wordpress-theme to EDS blocks in /blocks
+```
+
+---
+
+#### **VBRD to ProofHub Translator** (`bmad-vbrd-to-proofhub`)
+Converts Visual BRD Excel workbooks to ProofHub developer tasks.
+
+**What it does:**
+- Parses VBRD Excel (one sheet per section)
+- Creates ProofHub tasklists and tasks with Jira-grade tickets
+- Generates user stories, requirements, acceptance criteria
+- Idempotent sync (updates existing tasks on re-run)
+
+**When to use:**
+- Design handoff to development
+- Project setup from requirements docs
+- ProofHub project automation
+
+**Model:** sonnet
+
+**Example:**
+```
+Convert /docs/visual-brd.xlsx to ProofHub project "AEM Implementation"
+```
+
+---
+
+### 🤖 Specialized Analyzers
+
+These agents are invoked automatically by `bmad-code-scan` based on detected tech stack:
+
+#### **AEM HTL Analyzer**
+Reviews HTL templates for AEM-specific issues, component patterns, and accessibility.
+
+#### **Java/Spring Boot Analyzer**
+Reviews Java backend code for Spring Boot best practices, security, and performance.
+
+#### **JS/React Analyzer**
+Reviews JavaScript and React code for modern patterns, hooks usage, and performance.
+
+#### **CSS/SCSS Analyzer**
+Reviews stylesheets for BEM conventions, responsive design, and accessibility.
+
+#### **EDS Blocks Analyzer**
+Reviews Edge Delivery Services blocks for decoration patterns and Universal Editor compatibility.
+
+#### **Code Scan Verifier**
+Re-checks previously identified findings to determine fix status (Fixed/Open/Partially Fixed).
+
+---
+
+### 📚 Utilities
+
+#### **Help Agent** (`bmad-help`)
+Context-aware guidance for the AEM Toolkit.
+
+**What it does:**
+- Analyzes current project context
+- Recommends next steps based on repo state
+- Lists available skills with usage examples
+- Provides troubleshooting guidance
+
+**Example:**
+```
+bmad-help
+```
+
+---
+
+## Usage Examples
+
+### Example 1: Full Code Review
+
+```
+Use bmad-code-scan on https://github.com/org/aem-project.git branch develop
+```
+
+**What happens:**
+1. Clones repository to `repos/aem-project/`
+2. Detects tech stack: Java + HTL + CSS
+3. Dispatches Java, HTL, and CSS analyzers in parallel
+4. Generates `analysis/findings.json`, `analysis/findings.csv`, `analysis/report.md`
+
+---
+
+### Example 2: Fix Verification (Rescan)
+
+After fixing issues from a previous scan:
+
+```
+Rescan https://github.com/org/aem-project.git to verify fixes
+```
+
+**What happens:**
+1. Reads existing `analysis/findings.json`
+2. Re-checks only files with known findings
+3. Updates status: Fixed/Open/Partially Fixed
+4. Generates `analysis/rescan-summary.md`
+
+---
+
+### Example 3: Multi-Repo Architecture Documentation
+
+```
+Run bmad-tech-arch for:
+- https://github.com/org/frontend.git branch main
+- https://github.com/org/backend.git branch main
+- https://github.com/org/infrastructure.git branch main
+```
+
+**What happens:**
+1. Clones all three repositories
+2. Analyzes dependencies, APIs, and integration points
+3. Generates C4 diagrams (context, container, component)
+4. Produces technical architecture document in `output/tech-architecture/`
+
+---
+
+### Example 4: Pre-Deployment Security Scan
+
+```
+Run bmad-security-scan on repos/aem-project before deployment
+```
+
+**What happens:**
+1. Runs semgrep (SAST), gitleaks (secrets), trivy (containers)
+2. Generates consolidated security report
+3. Returns pass/fail verdict with remediation steps
+
+---
+
+### Example 5: Load Testing
+
+```
+Run bmad-perf-test on https://api.example.com:
+- Endpoint: /api/products
+- 100 VUs
+- 5 minutes
+- Threshold: p95 < 500ms, error rate < 1%
+```
+
+**What happens:**
+1. Generates k6 test script
+2. Runs load test with 100 virtual users for 5 minutes
+3. Reports SLA pass/fail
+4. Provides performance recommendations
+
+---
+
+## Project Structure
+
+```
+ai-agent/
+├── _bmad/                      # BMAD Method structure (runtime)
+│   ├── config/
+│   │   ├── module.yaml         # Module manifest
+│   │   └── module-help.csv     # Help lookup table
+│   ├── agents/                 # Agent persona files (12 agents)
+│   ├── skills/                 # Invokable workflows (10 skills)
+│   ├── tasks/                  # Reusable operations (5 tasks)
+│   ├── checklists/             # Severity tables (loaded on-demand)
+│   └── templates/              # Output templates
+│
+├── .claude/skills/             # Claude Code launchers
+├── .agents/skills/             # Cursor/Windsurf launchers
+│
+├── scripts/                    # Installation & utility scripts
+│   ├── install-global.sh       # Main installer
+│   ├── clone_or_update.sh      # Repo cloning
+│   ├── detect_stack.sh         # Tech stack detection
+│   ├── security-scan/          # Security tool wrappers
+│   └── perf-test/              # k6 test runners
+│
+├── quality-gate/               # AEM quality gate rules
+│   ├── rules/                  # Rule definitions
+│   │   ├── htl/
+│   │   ├── java/
+│   │   ├── frontend/
+│   │   └── custom/
+│   ├── runner/
+│   │   └── run-quality-gate.sh
+│   └── aggregator/
+│       └── aggregate-report.js
+│
+├── docs/                       # Detailed guides
+│   ├── CODE-SCAN-GUIDE.md
+│   ├── SECURITY-SCAN-GUIDE.md
+│   ├── PERF-TEST-GUIDE.md
+│   ├── AEM-QUALITY-GATE-GUIDE.md
+│   └── SPRING-BOOT-WORKFLOW-GUIDE.md
+│
+├── examples/                   # Usage examples & sample outputs
+├── repos/                      # Cloned repositories (gitignored)
+├── output/                     # Generated artifacts
+│
+└── README.md                   # This file
+```
+
+### Key Directories
+
+**`_bmad/`** - Core agent runtime
+- `agents/`: Token-optimized persona files (~50 lines each)
+- `skills/`: Invokable SKILL.md workflows
+- `checklists/`: On-demand loaded severity tables (60% token savings)
+
+**`.claude/skills/` & `.agents/skills/`** - IDE integrations
+- Launcher files that reference `_bmad/skills/`
+- Enable `bmad-*` command discovery
+
+**`scripts/`** - Zero-dependency automation
+- Shell scripts for deterministic operations (clone, detect, install)
+- No AI tokens used for these operations
+
+**`quality-gate/`** - Deterministic rule engine
+- 200+ AEM-specific rules (HTL, Java, frontend, OakPAL)
+- Pure JavaScript rule evaluation (no AI)
+
+---
+
+## Advanced Topics
+
+### Token Optimization
+
+The BMAD Method structure achieves ~60% token reduction at orchestration time:
+
+1. **Checklists loaded on-demand**: Severity tables only loaded when analyzer runs
+2. **Persona separation**: Small persona files for routing, detailed checklists for execution
+3. **Model split**: opus for planning, sonnet for execution
+4. **Deterministic tools**: Clone, detect, quality gate use zero tokens
+
+### IDE Compatibility
+
+**Both Claude Code and Cursor/Windsurf supported:**
+
+```bash
+# Installation creates launchers for both IDEs
+./scripts/install-global.sh
+
+# Claude Code: .claude/skills/
+# Cursor/Windsurf: .agents/skills/
+```
+
+Skills work identically across both IDEs.
+
+### Rescan Mode
+
+After fixing code issues, use rescan mode to verify fixes without full re-analysis:
+
+```
+Rescan https://github.com/org/repo.git
+```
+
+**Benefits:**
+- 10x faster than full scan (only checks files with known findings)
+- Updates finding status in same JSON/CSV (no duplicates)
+- Generates comparison report (Fixed/Open/Partially Fixed)
+
+### Custom Rules
+
+Add custom quality gate rules:
+
+```bash
+# Create custom rule
+cat > quality-gate/rules/custom/my-rule.js << 'EOF'
+module.exports = {
+  name: 'no-hardcoded-author',
+  severity: 'major',
+  check: (content, filepath) => {
+    if (/author\./.test(content)) {
+      return { fail: true, message: 'Avoid hardcoded author references' };
+    }
+    return { fail: false };
+  }
+};
+EOF
+
+# Run quality gate
+node quality-gate/runner/run-quality-gate.sh repos/my-project
+```
+
+### CI/CD Integration
+
+Run agents in CI pipelines:
+
+```yaml
+# .github/workflows/quality-check.yml
+name: Quality Check
+on: [pull_request]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Quality Gate
+        run: |
+          cd quality-gate && npm install
+          node runner/run-quality-gate.sh ..
+      - name: Upload Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: quality-report
+          path: quality-gate/report.json
+```
+
+### Contributing
+
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+### Support
+
+- **Issues**: [GitHub Issues](https://github.com/org/ai-agent/issues)
+- **Docs**: See `docs/` folder for detailed guides
+- **Examples**: See `examples/` folder for sample outputs
+
+---
+
+## License
+
+[Your License Here]
+
+---
+
+## Credits
+
+Built with the BMAD Method for modular AI-agent orchestration.
+
+- **Token Optimization**: On-demand checklist loading
+- **Model Strategy**: opus (planning) + sonnet (execution)  
+- **Zero-AI Tools**: Deterministic clone/detect/quality-gate operations
+- **IDE Agnostic**: Claude Code + Cursor/Windsurf support
 
 ### Agents (`agents/*.md`)
 

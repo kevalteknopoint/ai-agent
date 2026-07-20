@@ -2,6 +2,48 @@
 
 All notable changes to this AI automation toolkit are documented in this file.
 
+## [2.0.0] - 2026-07-20
+
+### Changed (BREAKING)
+- **BMAD Method v6 Structure**: Complete refactoring to modular AI-agent orchestration framework
+  - Migrated from flat `agents/` structure to hierarchical `_bmad/` module
+  - Separated personas (what) from workflows (how) for clearer routing
+  - Added `.claude/skills/` and `.agents/skills/` launchers for IDE integration
+  - Skills now invokable as `bmad-*` commands in both Claude Code and Cursor/Windsurf
+
+### Added
+- **Token Optimization**: ~60% reduction in orchestration context
+  - Extracted checklists into separate on-demand files (`_bmad/checklists/`)
+  - Checklists load only when analyzer runs, not at routing time
+  - Shared reference files eliminate duplication across agents
+- **BMAD Module Structure**:
+  - `_bmad/config/module.yaml` - Module manifest defining all agents, skills, tasks
+  - `_bmad/config/module-help.csv` - Context-aware help lookup table
+  - `_bmad/agents/` - 12 token-optimized persona files (~50 lines each, down from ~800)
+  - `_bmad/skills/` - 10 invokable SKILL.md workflows
+  - `_bmad/tasks/` - 5 reusable atomic operations
+  - `_bmad/checklists/` - 7 severity tables (loaded on-demand)
+  - `_bmad/templates/` - 3 output templates
+- **Documentation Consolidation**:
+  - Comprehensive master README.md with all setup instructions and agent descriptions
+  - Removed redundant AGENTS.md and QUICKSTART.md (merged into README.md)
+  - Single source of truth for installation, usage, and agent capabilities
+- **IDE Dual Support**:
+  - `.claude/skills/` launchers for Claude Code
+  - `.agents/skills/` launchers for Cursor/Windsurf
+  - Same skill definitions work identically across both IDEs
+
+### Removed
+- `agents/*.md` - Migrated to `_bmad/agents/` with token optimization
+- `AGENTS.md` - Content merged into master README.md
+- `QUICKSTART.md` - Content merged into master README.md
+
+### Technical
+- Model split preserved: opus (planning/orchestration), sonnet (execution/review)
+- Zero-AI tools remain deterministic (clone, detect, quality gate)
+- Parallel dispatch capability maintained for independent analyzers
+- Idempotent rescan mode unchanged
+
 ## [1.6.0] - 2026-07-19
 
 ### Added
